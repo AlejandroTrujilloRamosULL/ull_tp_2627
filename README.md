@@ -47,10 +47,20 @@ After which, the conda environment can be activated as
 $ git clone git@github.com:your-username/ull_tp_2627.git
 $ cd ull_tp_2627
 ```
-3. Verify your remote
+3. Add the course repository as `upstream` and verify your remotes
 ```
+$ git remote add upstream https://github.com/hpparvi/ull_tp_2627.git
 $ git remote -v
 ```
+`origin` should point to your fork and `upstream` to the course repository.
+
+### Getting new course material
+```
+$ git pull upstream main
+$ git push origin main
+```
+Alternatively, click "Sync fork" on your fork's GitHub page and then run `git pull`.
+
 ---
 <p align="center">
 &copy;2026 Hannu Parviainen
