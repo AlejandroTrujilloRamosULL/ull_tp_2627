@@ -1,12 +1,11 @@
-# Programming Techniques course 25-26
-- Course duration:  10 September – November
-- Place: CCA (Centro de Cálculo del Alumnado) and Aula 17
-- Times: Mondays and Wednesdays, 13:00-15:00
-- Teacher: Hannu Parviainen (hannu@iac.es)
+# Programming Techniques course 26-27
+- Course duration:  16 September – November 2026
+- Place: CCA (Centro de Cálculo del Alumnado)
+- Times: Mondays and Wednesdays, 15:00-17:00
+- Teacher: Hannu Parviainen (hparviai@ull.edu.es)
 - Teaching language: English
 
-
-This course teaches the basics of modern Fortran programming in astrophysics, version control with Git, debugging, and code parallelisation with OpenMP and MPI.
+This course teaches the basics of modern Fortran programming in astrophysics, version control with Git, and code parallelisation with OpenMP and MPI.
 
 ## Scoring
 Two options:
@@ -48,12 +47,12 @@ After which, the conda environment can be activated as
 $ git clone git@github.com:your-username/course-repo.git
 $ cd course-repo
 ```
-4. Verify your remote
+3. Verify your remote
 ```
 $ git remote -v
 ```
 ---
 <p align="center">
-&copy;2025 Hannu Parviainen
+&copy;2026 Hannu Parviainen
 </p>
 
