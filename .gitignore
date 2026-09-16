@@ -1,0 +1,54 @@
+# === Entornos Virtuales y Dependencias ===
+# Ignora la carpeta de tu entorno (base) y otros nombres comunes
+base/
+venv/
+.venv/
+env/
+conda-env/
+
+# === Compilación de Fortran y C ===
+# Objetos y módulos compilados
+*.o
+*.mod
+*.smod
+*.a
+*.so
+
+# Ejecutables (nombres específicos de tus programas)
+tree_openmp
+tree_mpi
+nbody_mpi
+*.exe
+*.out
+
+# === Archivos de Datos de Simulación ===
+# Evita subir archivos .dat pesados generados por la ejecución
+output_openmp.dat
+output_mpi.dat
+*.dat
+!lectures/exercise_1/input.dat
+*.log
+*.csv
+
+# === Python (si usas scripts de análisis/gráficas) ===
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# === LaTeX (archivos auxiliares de compilación de las transparencias) ===
+*.aux
+*.nav
+*.snm
+*.toc
+*.vrb
+*.dvi
+*.synctex.gz
+
+# === Sistema Operativo y Editores ===
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
