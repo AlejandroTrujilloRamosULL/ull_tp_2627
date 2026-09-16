@@ -31,7 +31,7 @@ Now, after the second lecture, your directory tree should look like:
 
 | Name | Directory |
 |--|--|
-| Name Surname Surname| ssn |
+| Julio Garcia Piñeiro| gpj |
 
 ---
 <p align="center">
