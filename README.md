@@ -41,11 +41,11 @@ After which, the conda environment can be activated as
     conda activate fortran 
 
 ### Forking and cloning the course repository
-1. On GitHub: click "Fork" on the course repository page
+1. On GitHub: click "Fork" on the [course repository page](https://github.com/hpparvi/ull_tp_2627)
 2. On your computer: clone your fork
 ``` 
-$ git clone git@github.com:your-username/course-repo.git
-$ cd course-repo
+$ git clone git@github.com:your-username/ull_tp_2627.git
+$ cd ull_tp_2627
 ```
 3. Verify your remote
 ```
