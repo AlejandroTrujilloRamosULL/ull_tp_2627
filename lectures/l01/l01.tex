@@ -1,0 +1,633 @@
+\input{../common}
+\subtitle{Lecture 1: Introduction and Version Control}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}{Programming Techniques 2026--2027}
+  \begin{itemize}
+    \item Lecturer: Hannu Parviainen (ULL, IAC)
+    \item Language: English
+    \item Contact: \texttt{hparviai@ull.edu.es}
+    \item Schedule: Mondays and Wednesdays 15:00--17:00
+    \item Dates: 16.9.2026 -- XX.11.2026
+    \item Location: CCA
+    \item Structure: theory + exercises
+    \item Reading: Fortan book, Pro Git, old lecture notes
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Programming Techniques 2026--2027}
+	\begin{block}{Assessment options:}
+		\begin{enumerate}
+			\item Two equally weighted exercises, no final exam
+			\begin{itemize}
+				\item Both exercises can be done over the period of several weeks
+				\item GitHub is used to follow and return the exercises, as well as to discuss and share ideas
+				\item Scoring is detailed separately for each exercise. However, the main criteria are that the code works, is readable and is well-documented. Interaction and involvement in GitHub is also important.
+			\end{itemize}
+			\vspace{0.25cm}
+			\item Final exam: writing a fully working parallelised Fortran program in 4 h (paper + pen)
+			\begin{itemize}
+				\item Nobody has ever chosen this
+			\end{itemize}
+		\end{enumerate}
+	\end{block}
+\end{frame}
+
+
+\begin{frame}{Course Topics}
+  \begin{itemize}
+  	\item Programming techniques in astronomy and astrophysics
+    \item Modern Fortran
+      \begin{itemize}
+        \item Data types
+        \item Flow control structures
+        \item Modules, subroutines and functions
+        \item Dynamic memory management (allocatable arrays, pointers)
+        \item Data structures: linked lists and trees
+      \end{itemize}
+    \item Debugging
+    \item Parallelisation: OpenMP
+    \item Distributed computing: MPI
+    \item Version control: Git + GitHub
+    \item Makefiles
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Not Course Topics}
+	\begin{block}{IDEs}
+	\begin{itemize}
+		\item Course teaches programming, not how to use a specific Integrated Development Environment
+		\item The code can be written using a text editor and compiled using command-line commands
+		\item \ldots however, a good IDE can make the course way less painful
+		\item Good options: \href{https://code.visualstudio.com}{VSCode}, \href{https://www.codeblocks.org/}{Code::Blocks}, Emacs (old-school)
+		\item Check the list from \href{https://fortran-lang.org/learn/os_setup/ides/}{fortran-lang.org}
+	\end{itemize}
+	\end{block}
+\end{frame}
+
+
+\begin{frame}{Lecturer: Hannu Parviainen}
+  \begin{itemize}
+    \item Research: exoplanets, Bayesian statistics, scientific computing, radiative transfer
+    \item BASIC, PASCAL, C, and C++ 1991--2004
+    \item Fortran as main language 2004--2017
+    \item Now: Python + Numba + OpenCL + JAX
+    \item Offices at IAC and ULL — feel free to pass by
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Basic Workflow}
+	\begin{enumerate}
+		\item Fork the official course repository on GitHub into your own account
+		\item Clone your forked repository to your local computer
+		\item Work on exercises in your own computer
+		\item Push changes back to your fork on GitHub
+		\item Open pull requests to merge your work to the main course repository
+	\end{enumerate}
+\end{frame}
+
+\section{Fortran}
+
+\begin{frame}
+	\centering
+	\Huge \textbf{Introduction to Fortran}
+\end{frame}
+
+% Fortran overview
+\begin{frame}{Fortran}
+	\begin{itemize}
+		\item Compiled programming language (vs. interpreted like Python)
+		\item Developed in the 1950s for scientific computing
+		\item Very good for numerically heavy problems in physics
+		\item Not really good for much else… but works well together with Python!
+		\item Major versions: FORTRAN 77, Fortran 90/95, 2003, 2008, 2018, 2023
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Compiled vs Interpreted Languages}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\textbf{Compiled (Fortran, C, C++)}
+		\begin{itemize}
+			\item Source $\to$ machine code via compiler
+			\item Produces executable before running
+			\item Optimised for target CPU
+			\item Requires a compiler
+		\end{itemize}
+		
+		\column{0.48\textwidth}
+		\textbf{Interpreted (Bash, Python, R, Matlab)}
+		\begin{itemize}
+			\item Source executed line by line
+			\item No separate compilation step
+			\item Requires interpreter to run
+		\end{itemize}
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}{Performance}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\textbf{Compiled}
+		\begin{itemize}
+			\item Very fast execution
+			\item Close to native machine code
+			\item Often 10--100$\times$ faster than Python \\ (but this can be improved using Numba or jAX)
+		\end{itemize}
+		
+		\column{0.48\textwidth}
+		\textbf{Interpreted}
+		\begin{itemize}
+			\item Slower due to interpreter overhead
+			\item Performance depends on libraries
+		\end{itemize}
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}{Development Speed}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\textbf{Compiled}
+		\begin{itemize}
+			\item Slower cycle: edit $\to$ compile $\to$ run
+			\item More boilerplate code
+		\end{itemize}
+		
+		\column{0.48\textwidth}
+		\textbf{Interpreted}
+		\begin{itemize}
+			\item Rapid iteration: edit $\to$ run
+			\item Shorter programs, easier syntax
+		\end{itemize}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Portability}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\textbf{Compiled}
+		\begin{itemize}
+			\item The code needs to be compiled for each OS and CPU architecture separately
+		\end{itemize}
+		
+		\column{0.48\textwidth}
+		\textbf{Interpreted}
+		\begin{itemize}
+			\item The code can be run with any setup (if the interpreter exists)
+		\end{itemize}
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}{Error Handling}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\textbf{Compiled}
+		\begin{itemize}
+			\item Errors caught at compile time
+			\item Type mismatches, missing variables flagged early
+		\end{itemize}
+		
+		\column{0.48\textwidth}
+		\textbf{Interpreted}
+		\begin{itemize}
+			\item Errors appear at runtime
+			\item Flexible, but can fail late
+		\end{itemize}
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}{Typical Use Cases}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\textbf{Compiled}
+		\begin{itemize}
+			\item Heavy numerical simulations
+			\item High-performance computing
+			\item Long-running production code
+		\end{itemize}
+		
+		\column{0.48\textwidth}
+		\textbf{Interpreted}
+		\begin{itemize}
+			\item Data analysis and exploration
+			\item Rapid prototyping
+			\item Teaching, scripting, glue code
+		\end{itemize}
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Fortran: First Steps}
+		\begin{columns}[T]
+		\column{0.48\textwidth}
+		\begin{itemize}
+		\item Program code inside a \texttt{program ... end program} block
+		\item Always use \texttt{implicit none}
+		\item Simple printing: \texttt{print *, ...}
+		\end{itemize}
+		\column{0.48\textwidth}
+		\begin{lstlisting}[language=Fortran]
+		program hello
+		implicit none
+		print *, "Hello world!"
+		end program hello
+		\end{lstlisting}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Compiling Fortran}
+	\begin{itemize}
+		\item Source code file $\to$ executable program
+		\item Free compilers: GNU, Intel, AMD
+		\item Vendor compilers optimise for CPU, but GNU is usually enough
+	\end{itemize}
+	\begin{lstlisting}[language=Fortran]
+	gfortran -o hello hello.f90
+	./hello
+	\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Fortran Source Files}
+	\begin{itemize}
+		\item Use suffix \texttt{.f90} for modern Fortran
+		\item Avoid version-specific suffixes (\texttt{.f03}, \texttt{.f08}, …)
+	\end{itemize}
+\end{frame}
+
+
+\section{Version Control}
+\begin{frame}
+	\centering
+	\Huge \textbf{Version Control}
+\end{frame}
+
+\begin{frame}{Version Control: What It Is and Why We Need It}
+	\begin{itemize}
+		\item Tracks changes in code, documents, and data
+		\item Allows you to:
+		\begin{itemize}
+			\item Revert to earlier versions
+			\item Compare changes over time
+			\item Work on features without breaking main code
+		\end{itemize}
+		\item Essential for collaboration
+		\item Prevents the "final\_v2\_really\_final.f90" problem
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Version Control Concepts}
+	\begin{itemize}
+		\item \textbf{Repository}: central place for files + history
+		\item \textbf{Commit}: snapshot of project at a given time
+		\item \textbf{Branch}: parallel line of development
+		\item \textbf{Merge}: combine changes from different branches
+		\item \textbf{Remote}: shared repository for collaboration
+	\end{itemize}
+	\vspace{0.5em}
+	Popular systems: Git, Subversion (SVN), Mercurial  
+\end{frame}
+
+
+\section{Version Control with Git}
+\begin{frame}
+	%\frametitle{What is Git?}
+	\begin{block}{What is Git?}
+		\textbf{Distributed Version Control System (VCS)} 
+		\begin{itemize}
+			\item Tracks changes in the source code and helps coordinate work among programmers.
+			\item Designed to handle everything from small to very large projects quickly and efficiently. 
+			\item Allows multiple developers to work on a project simultaneously without overwriting each other's changes. 
+		\end{itemize}
+	\end{block}
+	
+	\begin{block}{Distributed?}
+		\justifying
+		\begin{itemize}
+			\item Each user has a full copy of the repository.
+			\item Allows for a more flexible workflow than centralised VCSs.
+			\item Branching is fast and does not require a connection to the VCS server.
+		\end{itemize}
+	\end{block}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Why Use Git?}
+	\begin{itemize}
+		\item \textbf{Collaboration:} Streamlines teamwork on projects.
+		\item \textbf{Backup and Restore:} Safeguards code with version history.
+		\item \textbf{Track History:} Allows you to see what changes were made and when.
+		\item \textbf{Branching and Merging:} Supports multiple development lines.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Installing Git}
+	\begin{block}{Windows}
+		Install via \href{https://git-scm.com/download/win}{Git for Windows}.
+	\end{block}
+	\begin{block}{Mac}
+		Install via Homebrew using `brew install git` or install \href{https://developer.apple.com/xcode/}{Xcode}.
+	\end{block}
+	\begin{block}{Linux}
+		Install via package manager using `sudo apt-get install git` or equivalent.
+	\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Configuring Git}
+	Set your username and email for Git commits:
+	\begin{lstlisting}[language=bash]
+	$ git config --global user.name "Your Name"
+	$ git config --global user.email "you@example.com"
+	\end{lstlisting}
+	\begin{itemize}
+		\item These settings are used to attribute commits to you.
+		\item The `--global` flag applies settings for all repositories.
+	\end{itemize}
+\end{frame}
+
+%\section{Basic Git Commands}
+
+\begin{frame}[fragile]
+	\frametitle{Initializing a Repository}
+	Initialize a new Git repository in the current directory:
+	\begin{lstlisting}[language=bash]
+	$ git init
+	\end{lstlisting}
+	\begin{itemize}
+		\item Creates a new `.git` subdirectory.
+		\item Starts tracking versions for your project.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Checking Status}
+	Check the status of your working directory and staging area:
+	\begin{lstlisting}[language=bash]
+	$ git status
+	\end{lstlisting}
+	\begin{itemize}
+		\item Shows tracked and untracked files.
+		\item Indicates changes that are staged for commit.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{How Git Tracking Works}
+	\begin{itemize}
+		\item \textbf{Working Directory:} Your local filesystem where you modify files.
+		\item \textbf{Staging Area (Index):} A temporary area where you add changes to prepare for a commit.
+		\item \textbf{Repository (History):} The database where commits are stored.
+		\item \textbf{Tracking Changes:}
+		\begin{itemize}
+			\item Git monitors changes in tracked files.
+			\item Untracked files are not monitored until added.
+		\end{itemize}
+		\item \textbf{Lifecycle of a File:}
+		\begin{enumerate}
+			\item Modify files in the working directory.
+			\item Stage changes using `git add`.
+			\item Commit changes to the repository with `git commit`.
+		\end{enumerate}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Staging vs. Committing Changes}
+	\begin{itemize}
+		\item \textbf{Staging Changes (\texttt{git add}):}
+		\begin{itemize}
+			\item Prepares selected changes for the next commit.
+			\item Allows you to review and group changes.
+		\end{itemize}
+		\item \textbf{Committing Changes (\texttt{git commit}):}
+		\begin{itemize}
+			\item Records the staged changes into the repository history.
+			\item Creates a new commit object with a unique ID.
+			\item Includes a commit message describing the changes.
+		\end{itemize}
+		\item \textbf{Key Differences:}
+		\begin{itemize}
+			\item \textbf{Staging:} Prepares changes, but does not save them to history.
+			\item \textbf{Committing:} Saves the staged changes permanently in the repository.
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Staging Changes with \texttt{git add}}
+	Add files to the staging area:
+	\begin{lstlisting}[language=bash]
+	$ git add filename
+	$ git add .
+	\end{lstlisting}
+	\begin{itemize}
+		\item \texttt{git add filename}: Stages a specific file.
+		\item \texttt{git add .}: Stages all changes in the current directory.
+		\item \textbf{Staging:} Prepares changes to be included in the next commit.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Committing Changes with \texttt{git commit}}
+	Commit the staged changes to the repository:
+	\begin{lstlisting}[language=bash]
+	$ git commit -m "Commit message"
+	\end{lstlisting}
+	\begin{itemize}
+		\item Records a snapshot of the staging area.
+		\item \textbf{Commit Message:} Describes the changes made.
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Understanding Branches}
+	\begin{itemize}
+		\item \textbf{What is a Branch?}
+		\begin{itemize}
+			\item A parallel version of the repository.
+			\item Allows you to work on different features independently.
+		\end{itemize}
+		\item \textbf{Why Use Branches?}
+		\begin{itemize}
+			\item Isolate development work without affecting the main codebase.
+			\item Facilitate collaboration by allowing multiple features to be developed simultaneously.
+		\end{itemize}
+		\item \textbf{Default Branch:} Typically named `main` or `master`.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Creating and Switching Branches}
+	Create a new branch and switch to it:
+	\begin{lstlisting}[language=bash]
+	$ git branch new-feature
+	$ git checkout new-feature
+	\end{lstlisting}
+	Or combine both steps:
+	\begin{lstlisting}[language=bash]
+	$ git checkout -b new-feature
+	\end{lstlisting}
+	\begin{itemize}
+		\item \texttt{git branch new-feature}: Creates a new branch named `new-feature`.
+		\item \texttt{git checkout new-feature}: Switches to the `new-feature` branch.
+		\item \texttt{git checkout -b new-feature}: Creates and switches to `new-feature` in one command.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Merging Branches}
+	Merge changes from `new-feature` branch into `main`:
+	\begin{lstlisting}[language=bash]
+	$ git checkout main
+	$ git merge new-feature
+	\end{lstlisting}
+	\begin{itemize}
+		\item \texttt{git checkout main}: Switches to the `main` branch.
+		\item \texttt{git merge new-feature}: Merges `new-feature` into `main`.
+		\item \textbf{Merging:} Combines changes from one branch into another.
+	\end{itemize}
+\end{frame}
+
+\section{Introduction to GitHub}
+
+\begin{frame}
+	\frametitle{What is GitHub?}
+	\begin{itemize}
+		\item \textbf{Code Hosting Platform:} Hosts Git repositories online.
+		\item \textbf{Facilitates Collaboration:} Tools for team communication and coordination.
+		\item \textbf{Additional Features:}
+		\begin{itemize}
+			\item Issue tracking.
+			\item Pull requests for code reviews.
+			\item Wiki pages and documentation.
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Setting Up GitHub}
+	\begin{itemize}
+		\item \textbf{Create an Account:} Sign up at \href{https://github.com}{github.com}.
+		\item \textbf{Set Up SSH Keys:}
+		\begin{itemize}
+			\item Generate an SSH key pair on your local machine.
+			\item Add the public key to your GitHub account.
+		\end{itemize}
+		\item \textbf{Configure Git to Use SSH:}
+		\begin{itemize}
+			\item Ensures secure communication with GitHub.
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+	\frametitle{Connecting a Local Repository to GitHub}
+	Add a remote repository and push changes:
+	\begin{lstlisting}[language=bash]
+	$ git remote add origin git@github.com:username/repo.git
+	$ git push -u origin main
+	\end{lstlisting}
+	\begin{itemize}
+		\item \texttt{git remote add origin}: Links your local repo to GitHub.
+		\item \texttt{git push -u origin main}: Pushes commits to the `main` branch on GitHub.
+		\item \textbf{The \texttt{-u} Flag:} Sets `origin main` as the default upstream branch.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Collaborating on GitHub}
+	\begin{itemize}
+		\item \textbf{Forking Repositories:} Create a personal copy of someone else's project.
+		\item \textbf{Cloning Repositories:} Download a repository to your local machine.
+		\item \textbf{Pull Requests:} Propose changes to a repository.
+		\item \textbf{Code Reviews:} Collaboratively review code changes before merging.
+		\item \textbf{Issue Tracking:} Report bugs or request features.
+	\end{itemize}
+\end{frame}
+
+\section{Best Practices and Conclusion}
+
+\begin{frame}
+	\frametitle{Best Practices}
+	\begin{itemize}
+		\item \textbf{Write Meaningful Commit Messages:} Clearly describe what changes were made.
+		\item \textbf{Keep Commits Small and Focused:} Easier to review and understand.
+		\item \textbf{Regularly Pull Updates:} Keep your local repository up-to-date with the remote.
+		\item \textbf{Use Branches for New Features:} Isolate development work.
+		\item \textbf{Avoid Committing Sensitive Information:} Don't commit passwords or API keys.
+	\end{itemize}
+\end{frame}
+
+\section{Exercises}
+
+\begin{frame}{Preliminaries}
+	\begin{columns}[T]
+		\column{0.48\textwidth}
+		\begin{block}{Setup a Fortran Compiler}
+			\begin{itemize}
+				\item Optional: set up a Conda environment
+				\item Install gfortran
+				\item Optional: install VSCode or another IDE
+			\end{itemize}
+		\end{block}		
+		\column{0.48\textwidth}
+		\begin{block}{Setup Git \& GitHub}
+			\begin{itemize}
+				\item Install Git (if not installed)
+				\item Set up a GitHub account
+				\item Set up GitHub identification
+			\end{itemize}
+		\end{block}		
+	\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Preliminaries}
+	\begin{block}{Setup Course}
+	\begin{itemize}
+	 \item On GitHub: click "Fork" on the course repository page
+	 \item On your computer: clone your fork
+		\begin{lstlisting}[language=bash]
+		$ git clone git@github.com:your-username/course-repo.git
+		$ cd course-repo
+		\end{lstlisting}
+	\item Verify your remote
+		\begin{lstlisting}[language=bash]
+		$ git remote -v
+		\end{lstlisting}
+	\end{itemize}
+	\end{block}
+\end{frame}
+
+%\section{Exercises}
+%% Exercises
+%\begin{frame}{Exercises}
+%  \begin{enumerate}
+%    \item Modify the “Hello world” program to print it $n$ times, 
+%          where $n$ is read from the terminal.
+%    \item Write a program that prints factorials $n!$ from 0 to $n$.
+%    \item Write a program that prints $r!$ where $r$ is a positive 
+%          real number read from the terminal.
+%  \end{enumerate}
+%\end{frame}
+
+\end{document}
