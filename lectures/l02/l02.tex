@@ -1,0 +1,421 @@
+% Beamer slides: Fortran Types, Expressions, and Control Flow
+
+\input{../common}
+\title{Programming Techniques}
+\subtitle{Fortran Types, Expressions, and Control Structures}
+\author{Hannu Parviainen}
+\date{\today}
+
+\begin{document}
+
+% Title
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}[fragile]{Example: Triangle Area (Module + Program)}
+\begin{lstlisting}[language=Fortran]
+MODULE Triangle_Operations
+    IMPLICIT NONE
+    CONTAINS
+    FUNCTION Area(x,y,z)
+        REAL :: Area ! function type
+        REAL, INTENT(IN) :: x, y, z
+        REAL :: theta, height
+        theta = ACOS((x**2 + y**2 - z**2) / (2.0*x*y))
+        height = x * SIN(theta)
+        Area = 0.5 * y * height
+    END FUNCTION Area
+END MODULE Triangle_Operations
+
+PROGRAM Triangle
+    USE Triangle_Operations
+    IMPLICIT NONE
+    REAL :: a, b, c
+    PRINT *, 'Welcome, please enter the lengths of the 3 sides.'
+    READ *, a, b, c
+    PRINT *, "Triangle's area:", Area(a,b,c)
+END PROGRAM Triangle
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}{Coding Style (Recommendations)}
+\begin{block}{Conventions}
+\begin{itemize}
+\item Always use \texttt{IMPLICIT NONE}.
+\item Consider capitalising keywords/intrinsics; keep user identifiers consistent.
+\item Use small, consistent indentation (2–4 spaces); indent blocks and units.
+\item Include unit names in corresponding \texttt{END} statements.
+\end{itemize}
+\end{block}
+\begin{block}{Note}
+To fit code on slides, I have relaxed some conventions in teaching materials.
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Source Form (Free Form)}
+\begin{block}{Rules}
+\begin{itemize}
+\item Up to 132 characters per line.
+\item \texttt{!} introduces a comment.
+\item \texttt{\&} continues a logical line.
+\item \texttt{;} separates multiple statements on one line.
+\item Whitespace is not significant.
+\end{itemize}
+\end{block}
+\begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+PRINT *, "This line is continued " &
+// "on the next line"; END ! end of program
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\section{Types and Declarations}
+
+\begin{frame}{Intrinsic Types}
+  \begin{block}{Default Intrinsic Types}
+  \begin{itemize}
+    \item \textbf{Character}: \texttt{CHARACTER :: sex}\; \texttt{CHARACTER(LEN=12) :: name}
+    \item \textbf{Logical}: \texttt{LOGICAL :: wed}
+    \item \textbf{Numeric}: \texttt{REAL :: height}, \texttt{INTEGER :: age}, \texttt{COMPLEX :: val}
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Literal Constants}
+  \begin{block}{Examples}
+  \begin{itemize}
+    \item Integers: \texttt{12345}
+    \item Reals: \texttt{1.0}, \texttt{-6.6E-06}
+    \item Logical: \texttt{.FALSE.}, \texttt{.TRUE.}
+    \item Character: \texttt{"Mau'dib"}, \texttt{'Mau''dib'} (escaped quote)
+  \end{itemize}
+  \end{block}
+  \begin{block}{Notes}
+  \begin{itemize}
+    \item Only two logical values.
+    \item Reals contain a decimal point (and may use exponential form).
+    \item Character literals may be delimited by single or double quotes.
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Implicit Typing (Turn It Off)}
+  \begin{block}{Rule}
+  Without declarations, variables default to: \texttt{INTEGER} if starting with I–N; otherwise \texttt{REAL}. This is error-prone (or, more plainly, stupid).
+  \end{block}
+  \begin{block}{Best Practice}
+  Always put \texttt{IMPLICIT NONE} immediately after any \texttt{USE} statements.
+  \end{block}
+  \begin{block}{Pitfall (Fixed Form)}
+  In fixed form, \texttt{DO 30 I = 1.1000} can be parsed as assigning to a variable \texttt{DO30I} instead of a loop. Avoid by using free form and explicit declarations.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Declarations (Numeric and Logical)}
+  \begin{block}{General Syntax}
+  \texttt{<type> [, <attributes>] :: <vars> [= <value>]}
+  \end{block}
+  \begin{block}{Examples}
+\begin{lstlisting}[language=Fortran]
+REAL :: x
+INTEGER :: i, j
+LOGICAL, POINTER :: ptr
+REAL, DIMENSION(10,10) :: y, z
+INTEGER :: k = 4
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Arrays}
+  \texttt{DIMENSION(10,10)} declares a 10$\times$10 array.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Symbolic Constants (Parameters)}
+  \begin{block}{Definition}
+  Symbolic constants are declared with the \texttt{PARAMETER} attribute.
+  \end{block}
+  \begin{block}{Examples}
+\begin{lstlisting}[language=Fortran]
+REAL, PARAMETER :: pi = 3.14159
+CHARACTER(LEN=*), PARAMETER :: son = 'bart', dad = "Homer"
+\end{lstlisting}
+  \end{block}
+  \begin{block}{When to Use}
+  \begin{itemize}
+    \item A variable should take only one value.
+    \item To avoid “magic numbers”.
+    \item For maintainability: values may change later.
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Initialisation}
+  \begin{block}{Rules}
+  Initial values may use literals or other \texttt{PARAMETER}s.
+  \end{block}
+  \begin{block}{Examples}
+\begin{lstlisting}[language=Fortran]
+REAL :: x, y = 1.0D5
+INTEGER :: i = 5, j = 100
+CHARACTER(LEN=5) :: light = 'Amber'
+CHARACTER(LEN=9) :: gumboot = 'Wellie'  ! right-padded with blanks
+LOGICAL :: on = .TRUE., off = .FALSE.
+REAL, PARAMETER :: pi = 3.141592, radius = 3.5
+REAL :: circum = 2 * pi * radius
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Notes}
+  A subset of intrinsics are allowed in initialisation expressions (e.g., \texttt{KIND}, \texttt{LEN}, \texttt{HUGE}, \texttt{TINY}, \texttt{EPSILON}, etc.).
+  \end{block}
+\end{frame}
+
+\section{Expressions and Operators}
+
+\begin{frame}{Expressions}
+  \begin{block}{Types}
+  Expressions can be numeric (e.g., \texttt{x+1}), character (\texttt{a//b}), or logical (\texttt{p .AND. q}).
+  \end{block}
+  \begin{block}{Use}
+  Valid wherever an expression of the appropriate type is expected.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Assignment}
+  \begin{block}{Rule}
+  The left-hand side is a variable/object; the right-hand side is an expression of the same type.
+  \end{block}
+  \begin{block}{Examples}
+\begin{lstlisting}[language=Fortran]
+a = b
+c = SIN(.7) * 12.7      ! SIN uses radians
+name = initials // surname
+bool = (a .EQ. b .OR. c .NE. d)
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Intrinsic Numeric Operations}
+  \begin{block}{Operators}
+  \begin{itemize}
+    \item \texttt{**} exponentiation (right-associative): \texttt{10**2}
+    \item \texttt{*}, \texttt{/} multiplication, division: \texttt{10*7/4}
+    \item \texttt{+}, \texttt{-} unary/binary plus/minus: \texttt{10+7-4}, \texttt{-3}
+  \end{itemize}
+  \end{block}
+  \begin{block}{Notes}
+  RHS of \texttt{**} must be scalar. Operators apply to literals, scalars, and arrays (elemental semantics where applicable).
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Relational Operators}
+  \begin{block}{Syntax}
+  \texttt{.GT. (>)}, \texttt{.GE. (>=)}, \texttt{.LE. (<=)}, \texttt{.LT. (<)}, \texttt{.NE. (/=)}, \texttt{.EQ. (==)}
+  \end{block}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+bool = (i .GT. j)
+IF (i .EQ. j) c = d
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Reals}
+  Avoid exact equality with reals; compare within a tolerance:
+\begin{lstlisting}[language=Fortran]
+REAL :: tol
+tol = 1.0e-4
+IF (ABS(a - b) .LT. tol) same = .TRUE.
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Logical Operators}
+  \begin{block}{Operators}
+  \begin{itemize}
+    \item \texttt{.NOT.} — logical negation
+    \item \texttt{.AND.} — conjunction
+    \item \texttt{.OR.} — disjunction
+    \item \texttt{.EQV.} — equivalence (same truth value)
+    \item \texttt{.NEQV.} — non-equivalence (different truth value)
+  \end{itemize}
+  \end{block}
+  \begin{block}{Truth Table Highlights}
+  \begin{itemize}
+    \item \texttt{.NOT. .TRUE.} is \texttt{.FALSE.}
+    \item \texttt{.TRUE. .AND. .FALSE.} is \texttt{.FALSE.}
+    \item \texttt{.TRUE. .OR. .FALSE.} is \texttt{.TRUE.}
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\section{Control Flow}
+
+\begin{frame}{Control Flow}
+  \begin{block}{Overview}
+    Control constructs allow the normal sequential order of execution to be changed. Fortran 90 supports:
+    \begin{itemize}
+      \item Conditional execution: \texttt{IF}, \texttt{IF ... THEN ... ELSE}
+      \item Loops: \texttt{DO}, \texttt{DO WHILE}
+      \item Multi-way choice: \texttt{SELECT CASE}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{IF Statement}
+  \begin{block}{Syntax}
+    \texttt{IF (logical-expression) exec-stmt}
+  \end{block}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+IF (x .GT. y) maxi = x
+IF (a*b+c <= 47) boolie = .TRUE.
+IF (i .NE. 0 .AND. j .NE. 0) k = 1/(i*j)
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Block IF}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+IF (i .EQ. 0) THEN
+  PRINT*, "i is Zero"
+ELSE IF (i .GT. 0) THEN
+  PRINT*, "i is greater than Zero"
+ELSE
+  PRINT*, "i must be less than Zero"
+END IF
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Notes}
+    Both ELSE and ELSE IF are optional. Indentation improves readability.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Conditional Exit}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+i = 0
+DO
+  i = i + 1
+  IF (i .GT. 100) EXIT
+  PRINT*, "i is", i
+END DO
+PRINT*, "Loop finished. i now equals", i
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Explanation}
+    EXIT jumps out of the current DO loop.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Conditional Cycle}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+i = 0
+DO
+  i = i + 1
+  IF (i >= 50 .AND. i <= 59) CYCLE
+  IF (i > 100) EXIT
+  PRINT*, "i is", i
+END DO
+PRINT*, "Loop finished. i now equals", i
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Explanation}
+    CYCLE skips to the next iteration of the innermost loop.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Named and Nested Loops}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+outa: DO
+  inna: DO
+    IF (a .GT. b) EXIT outa
+    IF (a .EQ. b) CYCLE outa
+    IF (c .GT. d) EXIT inna
+    IF (c .EQ. a) CYCLE
+  END DO inna
+END DO outa
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Notes}
+    EXIT or CYCLE can target specific named loops.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{DO WHILE Loop}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+DO WHILE (a .EQ. b)
+  ...
+END DO
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Equivalent}
+\begin{lstlisting}[language=Fortran]
+DO
+  IF (a .NE. b) EXIT
+  ...
+END DO
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Indexed DO Loops}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+DO i = 1, 100, 1
+  ...
+END DO
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Syntax}
+    \texttt{DO var = expr1, expr2, [expr3]} with expr3 as step (default 1).
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Loop Variations}
+  \begin{block}{Examples}
+\begin{lstlisting}[language=Fortran]
+DO i = 1, 30, 2     ! 15 iterations
+DO j = 30, 1, -2    ! countdown
+DO k = 30, 1, 2     ! zero-trip (skipped)
+DO l = 1, 30        ! stride default = 1
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{SELECT CASE}
+	   \begin{block}{Example}
+	   	\begin{lstlisting}[language=Fortran]
+SELECT CASE (i)
+CASE (3,5,7)
+   PRINT*, "i is prime"
+ CASE (10:)
+   PRINT*, "i is > 10"
+ CASE DEFAULT
+   PRINT*, "i is not prime and is < 10"
+ END SELECT
+ \end{lstlisting}
+   \end{block}
+   \begin{block}{Notes}
+     Cleaner and often more efficient than nested IFs.
+   \end{block}
+ \end{frame}
+
+\section{Wrap-up}
+
+\begin{frame}{Takeaways}
+  \begin{block}{Essentials}
+  \begin{itemize}
+    \item Use \texttt{IMPLICIT NONE}; declare all variables.
+    \item Prefer symbolic constants for fixed values.
+    \item Be explicit with source form, types, and operators.
+    \item Control flow constructs: IF, DO, DO WHILE, SELECT CASE.
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\end{document}
