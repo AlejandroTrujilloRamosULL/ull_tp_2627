@@ -15,27 +15,27 @@
 
 \begin{frame}[fragile]{Example: Triangle Area (Module + Program)}
 \begin{lstlisting}[language=Fortran]
-MODULE Triangle_Operations
-    IMPLICIT NONE
-    CONTAINS
-    FUNCTION Area(x,y,z)
-        REAL :: Area ! function type
-        REAL, INTENT(IN) :: x, y, z
-        REAL :: theta, height
-        theta = ACOS((x**2 + y**2 - z**2) / (2.0*x*y))
-        height = x * SIN(theta)
-        Area = 0.5 * y * height
-    END FUNCTION Area
-END MODULE Triangle_Operations
+module triangle_operations
+  implicit none
+contains
+  function area(x, y, z)
+    real :: area ! function type
+    real, intent(in) :: x, y, z
+    real :: theta, height
+    theta = acos((x**2 + y**2 - z**2) / (2.0*x*y))
+    height = x * sin(theta)
+    area = 0.5 * y * height
+  end function area
+end module triangle_operations
 
-PROGRAM Triangle
-    USE Triangle_Operations
-    IMPLICIT NONE
-    REAL :: a, b, c
-    PRINT *, 'Welcome, please enter the lengths of the 3 sides.'
-    READ *, a, b, c
-    PRINT *, "Triangle's area:", Area(a,b,c)
-END PROGRAM Triangle
+program triangle
+  use triangle_operations
+  implicit none
+  real :: a, b, c
+  print *, 'Welcome, please enter the lengths of the 3 sides.'
+  read *, a, b, c
+  print *, "Triangle's area:", area(a, b, c)
+end program triangle
 \end{lstlisting}
 \end{frame}
 
@@ -43,10 +43,11 @@ END PROGRAM Triangle
 \begin{frame}{Coding Style (Recommendations)}
 \begin{block}{Conventions}
 \begin{itemize}
-\item Always use \texttt{IMPLICIT NONE}.
-\item Consider capitalising keywords/intrinsics; keep user identifiers consistent.
+\item Always use \texttt{implicit none}.
+\item Write keywords and intrinsics in lower case; use descriptive names (\texttt{n\_planets}, not \texttt{np}).
+\item Use the symbolic relational operators (\texttt{<}, \texttt{==}, \texttt{/=}), not the legacy \texttt{.lt.}, \texttt{.eq.}, \texttt{.ne.}.
 \item Use small, consistent indentation (2–4 spaces); indent blocks and units.
-\item Include unit names in corresponding \texttt{END} statements.
+\item Include unit names in corresponding \texttt{end} statements.
 \end{itemize}
 \end{block}
 \begin{block}{Note}
@@ -62,13 +63,13 @@ To fit code on slides, I have relaxed some conventions in teaching materials.
 \item \texttt{!} introduces a comment.
 \item \texttt{\&} continues a logical line.
 \item \texttt{;} separates multiple statements on one line.
-\item Blanks are significant: they separate keywords and names (\texttt{INTEGERi} is an error).
+\item Blanks are significant: they separate keywords and names (\texttt{integeri} is an error).
 \end{itemize}
 \end{block}
 \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-PRINT *, "This line is continued " &
-// "on the next line"; END ! end of program
+print *, "This line is continued " &
+// "on the next line"; end ! end of program
 \end{lstlisting}
 \end{block}
 \end{frame}
@@ -78,9 +79,9 @@ PRINT *, "This line is continued " &
 \begin{frame}{Intrinsic Types}
   \begin{block}{Default Intrinsic Types}
   \begin{itemize}
-    \item \textbf{Character}: \texttt{CHARACTER :: sex}\; \texttt{CHARACTER(LEN=12) :: name}
-    \item \textbf{Logical}: \texttt{LOGICAL :: wed}
-    \item \textbf{Numeric}: \texttt{REAL :: height}, \texttt{INTEGER :: age}, \texttt{COMPLEX :: val}
+    \item \textbf{Character}: \texttt{character :: spectral\_class}\; \texttt{character(len=12) :: star\_name}
+    \item \textbf{Logical}: \texttt{logical :: is\_binary}
+    \item \textbf{Numeric}: \texttt{real :: mass}, \texttt{integer :: n\_planets}, \texttt{complex :: visibility}
   \end{itemize}
   \end{block}
 \end{frame}
@@ -88,10 +89,10 @@ PRINT *, "This line is continued " &
 \begin{frame}{Literal Constants}
   \begin{block}{Examples}
   \begin{itemize}
-    \item Integers: \texttt{12345}
-    \item Reals: \texttt{1.0}, \texttt{-6.6E-06}
-    \item Logical: \texttt{.FALSE.}, \texttt{.TRUE.}
-    \item Character: \texttt{"Muad'Dib"}, \texttt{'Muad''Dib'} (escaped quote)
+    \item Integers: \texttt{4096}
+    \item Reals: \texttt{1.0}, \texttt{1.989e30}, \texttt{-0.5}
+    \item Logical: \texttt{.false.}, \texttt{.true.}
+    \item Character: \texttt{"Barnard's Star"}, \texttt{'Barnard''s Star'} (escaped quote)
   \end{itemize}
   \end{block}
   \begin{block}{Notes}
@@ -105,10 +106,10 @@ PRINT *, "This line is continued " &
 
 \begin{frame}{Implicit Typing (Turn It Off)}
   \begin{block}{Rule}
-  Without declarations, variables default to: \texttt{INTEGER} if starting with I–N; otherwise \texttt{REAL}. This is error-prone (or, more plainly, stupid).
+  Without declarations, variables default to: \texttt{integer} if starting with I–N; otherwise \texttt{real}. This is error-prone (or, more plainly, stupid).
   \end{block}
   \begin{block}{Best Practice}
-  Always put \texttt{IMPLICIT NONE} immediately after any \texttt{USE} statements.
+  Always put \texttt{implicit none} immediately after any \texttt{use} statements.
   \end{block}
 \end{frame}
 
@@ -118,26 +119,27 @@ PRINT *, "This line is continued " &
   \end{block}
   \begin{block}{Examples}
 \begin{lstlisting}[language=Fortran]
-REAL :: x
-INTEGER :: i, j
-LOGICAL, POINTER :: ptr
-REAL, DIMENSION(10,10) :: y, z
-INTEGER :: k = 4
+real :: mass
+integer :: i, j
+logical :: converged
+real, dimension(3) :: position, velocity
+integer :: n_steps = 1000
 \end{lstlisting}
   \end{block}
   \begin{block}{Arrays}
-  \texttt{DIMENSION(10,10)} declares a 10$\times$10 array.
+  \texttt{dimension(3)} declares a three-element array (more on arrays in Lecture 3).
   \end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Symbolic Constants (Parameters)}
   \begin{block}{Definition}
-  Symbolic constants are declared with the \texttt{PARAMETER} attribute.
+  Symbolic constants are declared with the \texttt{parameter} attribute.
   \end{block}
   \begin{block}{Examples}
 \begin{lstlisting}[language=Fortran]
-REAL, PARAMETER :: pi = 3.14159
-CHARACTER(LEN=*), PARAMETER :: son = 'bart', dad = "Homer"
+real, parameter :: pi = 3.14159
+real, parameter :: G = 6.674e-11   ! m^3 kg^-1 s^-2
+character(len=*), parameter :: host = 'Kepler-452', planet = "Kepler-452 b"
 \end{lstlisting}
   \end{block}
   \begin{block}{When to Use}
@@ -151,21 +153,21 @@ CHARACTER(LEN=*), PARAMETER :: son = 'bart', dad = "Homer"
 
 \begin{frame}[fragile]{Initialisation}
   \begin{block}{Rules}
-  Initial values may use literals or other \texttt{PARAMETER}s.
+  Initial values may use literals or other \texttt{parameter}s.
   \end{block}
   \begin{block}{Examples}
 \begin{lstlisting}[language=Fortran]
-REAL :: x, y = 1.0D5
-INTEGER :: i = 5, j = 100
-CHARACTER(LEN=5) :: light = 'Amber'
-CHARACTER(LEN=9) :: gumboot = 'Wellie'  ! right-padded with blanks
-LOGICAL :: on = .TRUE., off = .FALSE.
-REAL, PARAMETER :: pi = 3.141592, radius = 3.5
-REAL :: circum = 2 * pi * radius
+real :: distance, luminosity = 3.828e26
+integer :: n_stars = 5, n_steps = 100
+character(len=1) :: band = 'V'
+character(len=10) :: star = 'Vega'   ! right-padded with blanks
+logical :: converged = .false., verbose = .true.
+real, parameter :: pi = 3.141592, au = 1.496e11, year = 3.156e7
+real :: v_earth = 2 * pi * au / year   ! Earth's orbital speed (m/s)
 \end{lstlisting}
   \end{block}
   \begin{block}{Notes}
-  A subset of intrinsics are allowed in initialisation expressions (e.g., \texttt{KIND}, \texttt{LEN}, \texttt{HUGE}, \texttt{TINY}, \texttt{EPSILON}, etc.).
+  A subset of intrinsics are allowed in initialisation expressions (e.g., \texttt{kind}, \texttt{len}, \texttt{huge}, \texttt{tiny}, \texttt{epsilon}, etc.).
   \end{block}
 \end{frame}
 
@@ -173,7 +175,7 @@ REAL :: circum = 2 * pi * radius
 
 \begin{frame}{Expressions}
   \begin{block}{Types}
-  Expressions can be numeric (e.g., \texttt{x+1}), character (\texttt{a//b}), or logical (\texttt{p .AND. q}).
+  Expressions can be numeric (e.g., \texttt{2*pi*r}), character (\texttt{star // ' b'}), or logical (\texttt{is\_binary .and. converged}).
   \end{block}
   \begin{block}{Use}
   Valid wherever an expression of the appropriate type is expected.
@@ -186,11 +188,11 @@ REAL :: circum = 2 * pi * radius
   \end{block}
   \begin{block}{Examples}
 \begin{lstlisting}[language=Fortran]
-a = b
-c = SIN(.7) * 12.7      ! SIN uses radians
-name = initials // surname
-bool = (a .EQ. b .OR. c .NE. d)
-i = 3.7                 ! INTEGER i: truncated to 3
+m_total = m1 + m2
+x = r * cos(phi)                 ! cos uses radians
+planet_name = star_name // ' b'
+in_hz = (a >= a_inner .and. a <= a_outer)   ! in the habitable zone?
+n_stars = 3.7                    ! integer n_stars: truncated to 3
 \end{lstlisting}
   \end{block}
 \end{frame}
@@ -210,20 +212,21 @@ i = 3.7                 ! INTEGER i: truncated to 3
 
 \begin{frame}[fragile]{Relational Operators}
   \begin{block}{Syntax}
-  \texttt{.GT. (>)}, \texttt{.GE. (>=)}, \texttt{.LE. (<=)}, \texttt{.LT. (<)}, \texttt{.NE. (/=)}, \texttt{.EQ. (==)}
+  \texttt{<}, \texttt{<=}, \texttt{==}, \texttt{/=}, \texttt{>=}, \texttt{>}\quad (legacy forms: \texttt{.lt.}, \texttt{.le.}, \texttt{.eq.}, \texttt{.ne.}, \texttt{.ge.}, \texttt{.gt.})\\
+  Note that ``not equal'' is \texttt{/=}. Writing \texttt{!=} would start a comment.
   \end{block}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-bool = (i .GT. j)
-IF (i .EQ. j) c = d
+is_giant = (radius > 10.0)
+if (n_planets == 0) print *, 'No known planets'
 \end{lstlisting}
   \end{block}
   \begin{block}{Reals}
   Avoid exact equality with reals; compare within a tolerance:
 \begin{lstlisting}[language=Fortran]
-REAL :: tol
+real :: tol
 tol = 1.0e-4
-IF (ABS(a - b) .LT. tol) same = .TRUE.
+if (abs(m1 - m2) < tol) equal_mass = .true.
 \end{lstlisting}
   \end{block}
 \end{frame}
@@ -231,18 +234,18 @@ IF (ABS(a - b) .LT. tol) same = .TRUE.
 \begin{frame}{Logical Operators}
   \begin{block}{Operators}
   \begin{itemize}
-    \item \texttt{.NOT.} — logical negation
-    \item \texttt{.AND.} — conjunction
-    \item \texttt{.OR.} — disjunction
-    \item \texttt{.EQV.} — equivalence (same truth value)
-    \item \texttt{.NEQV.} — non-equivalence (different truth value)
+    \item \texttt{.not.} — logical negation
+    \item \texttt{.and.} — conjunction
+    \item \texttt{.or.} — disjunction
+    \item \texttt{.eqv.} — equivalence (same truth value)
+    \item \texttt{.neqv.} — non-equivalence (different truth value)
   \end{itemize}
   \end{block}
   \begin{block}{Truth Table Highlights}
   \begin{itemize}
-    \item \texttt{.NOT. .TRUE.} is \texttt{.FALSE.}
-    \item \texttt{.TRUE. .AND. .FALSE.} is \texttt{.FALSE.}
-    \item \texttt{.TRUE. .OR. .FALSE.} is \texttt{.TRUE.}
+    \item \texttt{.not. .true.} is \texttt{.false.}
+    \item \texttt{.true. .and. .false.} is \texttt{.false.}
+    \item \texttt{.true. .or. .false.} is \texttt{.true.}
   \end{itemize}
   \end{block}
 \end{frame}
@@ -253,153 +256,157 @@ IF (ABS(a - b) .LT. tol) same = .TRUE.
   \begin{block}{Overview}
     Control constructs allow the normal sequential order of execution to be changed. Fortran supports:
     \begin{itemize}
-      \item Conditional execution: \texttt{IF}, \texttt{IF ... THEN ... ELSE}, \texttt{SELECT CASE}
-      \item Loops: \texttt{DO}, \texttt{DO WHILE}
-      \item Loop control: \texttt{EXIT}, \texttt{CYCLE}
+      \item Conditional execution: \texttt{if}, \texttt{if ... then ... else}, \texttt{select case}
+      \item Loops: \texttt{do}, \texttt{do while}
+      \item Loop control: \texttt{exit}, \texttt{cycle}
     \end{itemize}
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{IF Statement}
+\begin{frame}[fragile]{\texttt{if} Statement}
   \begin{block}{Syntax}
-    \texttt{IF (logical-expression) exec-stmt}
+    \texttt{if (logical-expression) exec-stmt}
   \end{block}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-IF (x .GT. y) maxi = x
-IF (a*b+c <= 47) boolie = .TRUE.
-IF (i .NE. 0 .AND. j .NE. 0) k = 1/(i*j)
+if (flux > flux_max) flux_max = flux
+if (b_mag - v_mag > 1.0) is_red = .true.
+if (n_obs > 0) mean_flux = total_flux / n_obs
 \end{lstlisting}
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{Block IF}
+\begin{frame}[fragile]{Block \texttt{if}}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-IF (i .EQ. 0) THEN
-  PRINT*, "i is Zero"
-ELSE IF (i .GT. 0) THEN
-  PRINT*, "i is greater than Zero"
-ELSE
-  PRINT*, "i must be less than Zero"
-END IF
-\end{lstlisting}
-  \end{block}
-  \begin{block}{Notes}
-    Both ELSE and ELSE IF are optional. Indentation improves readability.
-  \end{block}
-\end{frame}
-
-\begin{frame}[fragile]{SELECT CASE}
-  \begin{block}{Example}
-\begin{lstlisting}[language=Fortran]
-SELECT CASE (i)
-CASE (2,3,5,7)
-  PRINT*, "i is prime"
-CASE (10:)
-  PRINT*, "i is >= 10"
-CASE DEFAULT
-  PRINT*, "i is not prime and is < 10"
-END SELECT
+if (e < 1.0) then
+  print *, "Elliptical orbit (bound)"
+else if (e > 1.0) then
+  print *, "Hyperbolic orbit (unbound)"
+else
+  print *, "Parabolic orbit"
+end if
 \end{lstlisting}
   \end{block}
   \begin{block}{Notes}
-    Cleaner and often more efficient than nested IFs.
+    Both \texttt{else} and \texttt{else if} are optional. Indentation improves readability.
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{Indexed DO Loops}
+\begin{frame}[fragile]{\texttt{select case}}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-DO i = 1, 100, 1
+select case (n_planets)
+case (0)
+  print *, "No known planets"
+case (1)
+  print *, "Single-planet system"
+case (2:7)
+  print *, "Multi-planet system"
+case (8:)
+  print *, "At least as many planets as the Solar System"
+case default
+  print *, "Invalid planet count"
+end select
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Notes}
+    Cleaner and often more efficient than nested \texttt{if}s.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Indexed \texttt{do} Loops}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+do i = 1, 100, 1
   ...
-END DO
+end do
 \end{lstlisting}
   \end{block}
   \begin{block}{Syntax}
-    \texttt{DO var = start, stop [, step]} with \texttt{step} defaulting to 1.
+    \texttt{do var = start, stop [, step]} with \texttt{step} defaulting to 1.
   \end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Loop Variations}
   \begin{block}{Examples}
 \begin{lstlisting}[language=Fortran]
-DO i = 1, 30, 2     ! 15 iterations
-DO j = 30, 1, -2    ! countdown
-DO k = 30, 1, 2     ! zero-trip (skipped)
-DO l = 1, 30        ! step default = 1
+do i = 1, 30, 2     ! 15 iterations
+do j = 30, 1, -2    ! countdown
+do k = 30, 1, 2     ! zero-trip (skipped)
+do l = 1, 30        ! step default = 1
 \end{lstlisting}
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{Conditional Exit}
+\begin{frame}[fragile]{Conditional \texttt{exit}}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-i = 0
-DO
-  i = i + 1
-  IF (i .GT. 100) EXIT
-  PRINT*, "i is", i
-END DO
-PRINT*, "Loop finished. i now equals", i
-\end{lstlisting}
-  \end{block}
-  \begin{block}{Explanation}
-    A \texttt{DO} without loop control repeats forever. EXIT jumps out of the current DO loop.
-  \end{block}
-\end{frame}
-
-\begin{frame}[fragile]{Conditional Cycle}
-  \begin{block}{Example}
-\begin{lstlisting}[language=Fortran]
-i = 0
-DO
-  i = i + 1
-  IF (i >= 50 .AND. i <= 59) CYCLE
-  IF (i > 100) EXIT
-  PRINT*, "i is", i
-END DO
-PRINT*, "Loop finished. i now equals", i
+frame = 0
+do
+  frame = frame + 1
+  if (frame > 100) exit
+  print *, "Reducing frame", frame
+end do
+print *, "Loop finished. frame now equals", frame
 \end{lstlisting}
   \end{block}
   \begin{block}{Explanation}
-    CYCLE skips to the next iteration of the innermost loop.
+    A \texttt{do} without loop control repeats forever. \texttt{exit} jumps out of the current \texttt{do} loop.
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{DO WHILE Loop}
+\begin{frame}[fragile]{Conditional \texttt{cycle}}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-DO WHILE (a .EQ. b)
+frame = 0
+do
+  frame = frame + 1
+  if (frame >= 50 .and. frame <= 59) cycle   ! clouds: skip these frames
+  if (frame > 100) exit
+  print *, "Reducing frame", frame
+end do
+print *, "Loop finished. frame now equals", frame
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Explanation}
+    \texttt{cycle} skips to the next iteration of the innermost loop.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{do while} Loop}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+do while (.not. converged)
   ...
-END DO
+end do
 \end{lstlisting}
   \end{block}
   \begin{block}{Equivalent}
 \begin{lstlisting}[language=Fortran]
-DO
-  IF (a .NE. b) EXIT
+do
+  if (converged) exit
   ...
-END DO
+end do
 \end{lstlisting}
   \end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Named and Nested Loops}
-  \begin{block}{Example}
+  \begin{block}{Example: counting bright pixels in an image}
 \begin{lstlisting}[language=Fortran]
-outa: DO
-  inna: DO
-    IF (a .GT. b) EXIT outa
-    IF (a .EQ. b) CYCLE outa
-    IF (c .GT. d) EXIT inna
-    IF (c .EQ. a) CYCLE
-  END DO inna
-END DO outa
+rows: do j = 1, ny
+  cols: do i = 1, nx
+    if (image(i, j) < 0.0) cycle rows          ! bad pixel: skip the rest of this row
+    if (image(i, j) > saturation) exit rows    ! saturated pixel: stop searching
+    if (image(i, j) < threshold) cycle         ! same as cycle cols
+    n_bright = n_bright + 1
+  end do cols
+end do rows
 \end{lstlisting}
   \end{block}
   \begin{block}{Notes}
-    EXIT or CYCLE can target specific named loops.
+    \texttt{exit} and \texttt{cycle} can name the loop they act on. Without a name, they act on the innermost loop.
   \end{block}
 \end{frame}
 
@@ -408,10 +415,10 @@ END DO outa
 \begin{frame}{Takeaways}
   \begin{block}{Essentials}
   \begin{itemize}
-    \item Use \texttt{IMPLICIT NONE}; declare all variables.
+    \item Use \texttt{implicit none}; declare all variables.
     \item Prefer symbolic constants for fixed values.
-    \item Be explicit with source form, types, and operators.
-    \item Control flow constructs: IF, DO, DO WHILE, SELECT CASE.
+    \item Write keywords in lower case and use the symbolic operators (\texttt{<}, \texttt{==}, \texttt{/=}).
+    \item Control flow constructs: \texttt{if}, \texttt{do}, \texttt{do while}, \texttt{select case}.
   \end{itemize}
   \end{block}
 \end{frame}
