@@ -62,7 +62,7 @@ To fit code on slides, I have relaxed some conventions in teaching materials.
 \item \texttt{!} introduces a comment.
 \item \texttt{\&} continues a logical line.
 \item \texttt{;} separates multiple statements on one line.
-\item Whitespace is not significant.
+\item Blanks are significant: they separate keywords and names (\texttt{INTEGERi} is an error).
 \end{itemize}
 \end{block}
 \begin{block}{Example}
@@ -91,7 +91,7 @@ PRINT *, "This line is continued " &
     \item Integers: \texttt{12345}
     \item Reals: \texttt{1.0}, \texttt{-6.6E-06}
     \item Logical: \texttt{.FALSE.}, \texttt{.TRUE.}
-    \item Character: \texttt{"Mau'dib"}, \texttt{'Mau''dib'} (escaped quote)
+    \item Character: \texttt{"Muad'Dib"}, \texttt{'Muad''Dib'} (escaped quote)
   \end{itemize}
   \end{block}
   \begin{block}{Notes}
@@ -109,9 +109,6 @@ PRINT *, "This line is continued " &
   \end{block}
   \begin{block}{Best Practice}
   Always put \texttt{IMPLICIT NONE} immediately after any \texttt{USE} statements.
-  \end{block}
-  \begin{block}{Pitfall (Fixed Form)}
-  In fixed form, \texttt{DO 30 I = 1.1000} can be parsed as assigning to a variable \texttt{DO30I} instead of a loop. Avoid by using free form and explicit declarations.
   \end{block}
 \end{frame}
 
@@ -185,7 +182,7 @@ REAL :: circum = 2 * pi * radius
 
 \begin{frame}[fragile]{Assignment}
   \begin{block}{Rule}
-  The left-hand side is a variable/object; the right-hand side is an expression of the same type.
+  The left-hand side is a variable; the right-hand side is an expression. The expression is evaluated first and then converted to the type of the variable. Numeric conversion happens silently.
   \end{block}
   \begin{block}{Examples}
 \begin{lstlisting}[language=Fortran]
@@ -193,6 +190,7 @@ a = b
 c = SIN(.7) * 12.7      ! SIN uses radians
 name = initials // surname
 bool = (a .EQ. b .OR. c .NE. d)
+i = 3.7                 ! INTEGER i: truncated to 3
 \end{lstlisting}
   \end{block}
 \end{frame}
@@ -206,7 +204,7 @@ bool = (a .EQ. b .OR. c .NE. d)
   \end{itemize}
   \end{block}
   \begin{block}{Notes}
-  RHS of \texttt{**} must be scalar. Operators apply to literals, scalars, and arrays (elemental semantics where applicable).
+  Operators apply to literals, scalars, and arrays. With arrays they act element by element, and array operands must have the same shape.
   \end{block}
 \end{frame}
 
@@ -253,11 +251,11 @@ IF (ABS(a - b) .LT. tol) same = .TRUE.
 
 \begin{frame}{Control Flow}
   \begin{block}{Overview}
-    Control constructs allow the normal sequential order of execution to be changed. Fortran 90 supports:
+    Control constructs allow the normal sequential order of execution to be changed. Fortran supports:
     \begin{itemize}
-      \item Conditional execution: \texttt{IF}, \texttt{IF ... THEN ... ELSE}
+      \item Conditional execution: \texttt{IF}, \texttt{IF ... THEN ... ELSE}, \texttt{SELECT CASE}
       \item Loops: \texttt{DO}, \texttt{DO WHILE}
-      \item Multi-way choice: \texttt{SELECT CASE}
+      \item Loop control: \texttt{EXIT}, \texttt{CYCLE}
     \end{itemize}
   \end{block}
 \end{frame}
@@ -292,6 +290,48 @@ END IF
   \end{block}
 \end{frame}
 
+\begin{frame}[fragile]{SELECT CASE}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+SELECT CASE (i)
+CASE (2,3,5,7)
+  PRINT*, "i is prime"
+CASE (10:)
+  PRINT*, "i is >= 10"
+CASE DEFAULT
+  PRINT*, "i is not prime and is < 10"
+END SELECT
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Notes}
+    Cleaner and often more efficient than nested IFs.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Indexed DO Loops}
+  \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+DO i = 1, 100, 1
+  ...
+END DO
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Syntax}
+    \texttt{DO var = start, stop [, step]} with \texttt{step} defaulting to 1.
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Loop Variations}
+  \begin{block}{Examples}
+\begin{lstlisting}[language=Fortran]
+DO i = 1, 30, 2     ! 15 iterations
+DO j = 30, 1, -2    ! countdown
+DO k = 30, 1, 2     ! zero-trip (skipped)
+DO l = 1, 30        ! step default = 1
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
 \begin{frame}[fragile]{Conditional Exit}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
@@ -305,7 +345,7 @@ PRINT*, "Loop finished. i now equals", i
 \end{lstlisting}
   \end{block}
   \begin{block}{Explanation}
-    EXIT jumps out of the current DO loop.
+    A \texttt{DO} without loop control repeats forever. EXIT jumps out of the current DO loop.
   \end{block}
 \end{frame}
 
@@ -327,24 +367,6 @@ PRINT*, "Loop finished. i now equals", i
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{Named and Nested Loops}
-  \begin{block}{Example}
-\begin{lstlisting}[language=Fortran]
-outa: DO
-  inna: DO
-    IF (a .GT. b) EXIT outa
-    IF (a .EQ. b) CYCLE outa
-    IF (c .GT. d) EXIT inna
-    IF (c .EQ. a) CYCLE
-  END DO inna
-END DO outa
-\end{lstlisting}
-  \end{block}
-  \begin{block}{Notes}
-    EXIT or CYCLE can target specific named loops.
-  \end{block}
-\end{frame}
-
 \begin{frame}[fragile]{DO WHILE Loop}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
@@ -363,47 +385,23 @@ END DO
   \end{block}
 \end{frame}
 
-\begin{frame}[fragile]{Indexed DO Loops}
+\begin{frame}[fragile]{Named and Nested Loops}
   \begin{block}{Example}
 \begin{lstlisting}[language=Fortran]
-DO i = 1, 100, 1
-  ...
-END DO
+outa: DO
+  inna: DO
+    IF (a .GT. b) EXIT outa
+    IF (a .EQ. b) CYCLE outa
+    IF (c .GT. d) EXIT inna
+    IF (c .EQ. a) CYCLE
+  END DO inna
+END DO outa
 \end{lstlisting}
   \end{block}
-  \begin{block}{Syntax}
-    \texttt{DO var = expr1, expr2, [expr3]} with expr3 as step (default 1).
+  \begin{block}{Notes}
+    EXIT or CYCLE can target specific named loops.
   \end{block}
 \end{frame}
-
-\begin{frame}[fragile]{Loop Variations}
-  \begin{block}{Examples}
-\begin{lstlisting}[language=Fortran]
-DO i = 1, 30, 2     ! 15 iterations
-DO j = 30, 1, -2    ! countdown
-DO k = 30, 1, 2     ! zero-trip (skipped)
-DO l = 1, 30        ! stride default = 1
-\end{lstlisting}
-  \end{block}
-\end{frame}
-
-\begin{frame}[fragile]{SELECT CASE}
-	   \begin{block}{Example}
-	   	\begin{lstlisting}[language=Fortran]
-SELECT CASE (i)
-CASE (3,5,7)
-   PRINT*, "i is prime"
- CASE (10:)
-   PRINT*, "i is > 10"
- CASE DEFAULT
-   PRINT*, "i is not prime and is < 10"
- END SELECT
- \end{lstlisting}
-   \end{block}
-   \begin{block}{Notes}
-     Cleaner and often more efficient than nested IFs.
-   \end{block}
- \end{frame}
 
 \section{Wrap-up}
 
