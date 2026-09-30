@@ -32,6 +32,7 @@ Now, after the second lecture, your directory tree should look like:
 | -------------------- | --------- |
 | Miguel Barchín Rubio | brm       |
 | Jorge Faci Descartín | fdj       |
+| Alejandro Trujillo Ramos | tra   |
 ---
 
 <p align="center">
