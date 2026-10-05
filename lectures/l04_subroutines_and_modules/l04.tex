@@ -1,0 +1,451 @@
+\input{../common}
+\subtitle{Lecture 4: programs, modules, subroutines, and functions}
+
+\begin{document}
+
+% Title
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Program Units}
+
+\begin{frame}{Fortran Program Units}
+  \begin{block}{Main kinds}
+    \begin{itemize}
+      \item \textbf{program}: where execution begins; may contain internal procedures via \texttt{contains}.
+      \item \textbf{module}: container of declarations and procedures; attach with \texttt{use}.
+    \end{itemize}
+  \end{block}
+  \begin{block}{Procedures}
+    \begin{itemize}
+      \item \textbf{subroutine}: performs a task; invoked with \texttt{call}; no return value.
+      \item \textbf{function}: like a subroutine but returns a value via its function name or a \texttt{result} variable.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\section{Main Program}
+
+\begin{frame}[fragile]{Main Program: Syntax}
+\begin{block}{Skeleton}
+\begin{lstlisting}[language=Fortran]
+program main
+  implicit none
+  ! declarations
+  ! executable statements
+contains                 ! optional internal procedures
+  ! subroutine ...
+  ! function   ...
+end program main
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Main Program: Minimal Example}
+\begin{block}{Internal function example}
+\begin{lstlisting}[language=Fortran]
+program main
+  implicit none
+  real :: x
+  read *, x
+  print *, floor(x)            ! intrinsic
+  print *, negative(x)         ! internal function
+contains
+  real function negative(a)
+    real, intent(in) :: a
+    negative = -a
+  end function negative
+end program main
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+
+\section{Modules}
+
+\begin{frame}[fragile]{Modules}
+  \begin{columns}[T]
+    % Left: text
+    \column{0.52\textwidth}
+    \begin{block}{What modules are}
+      \begin{itemize}
+        \item Libraries of functions, subroutines, derived types, and constants.
+        \item Can live in the same file as the main program, but are typically in their own files.
+        \item Can be precompiled and linked with the main program at compilation time.
+      \end{itemize}
+    \end{block}
+    \vspace{0.3em}
+
+    \column{0.48\textwidth}
+\begin{lstlisting}[language=Fortran]
+module mymath
+  implicit none
+  real, parameter :: pi = 3.14159
+contains
+  real function square(a)
+    real, intent(in) :: a
+    square = a**2
+  end function square
+end module mymath
+
+program ex1
+  use mymath
+  implicit none
+  print *, square(2.3), pi
+end program ex1
+\end{lstlisting}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Compiling a program that uses a module}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \begin{block}{Compilation result}
+      \begin{itemize}
+        \item Compiling the example produces the executable \texttt{ex1} and a module file \texttt{mymath.mod}.
+        \item The \texttt{.mod} file plays a role similar to a C/C++ header: it contains interface information for procedures in the module.
+      \end{itemize}
+    \end{block}
+
+    \column{0.48\textwidth}
+    \begin{block}{With module and program in \texttt{ex1.f90}}
+\begin{lstlisting}[language={}]
+$ gfortran -o ex1 ex1.f90
+$ ls
+ex1  ex1.f90  mymath.mod
+$ ./ex1
+   5.28999996       3.14159012
+\end{lstlisting}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Modules in separate files \& build options}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \begin{block}{Two-file layout}
+      \texttt{mymath.f90} holds the module; \texttt{ex1.f90} holds the program.
+    \end{block}
+    \begin{block}{Compiling}
+      \begin{itemize}
+        \item Compile the module first, then link the object when building the program:
+        \item[] \texttt{gfortran -c mymath.f90}\\
+               \texttt{gfortran -o ex1 ex1.f90 mymath.o}
+        \item Or compile both together, module first:
+        \item[] \texttt{gfortran -o ex1 mymath.f90 ex1.f90}
+        \item For larger projects, use a \textbf{Makefile} (covered later in the course).
+      \end{itemize}
+    \end{block}
+
+    \column{0.48\textwidth}
+\begin{lstlisting}[language=Fortran,caption={mymath.f90}]
+module mymath
+  implicit none
+  real, parameter :: pi = 3.14159
+contains
+  real function square(a)
+    real, intent(in) :: a
+    square = a**2
+  end function square
+end module mymath
+\end{lstlisting}
+
+\begin{lstlisting}[language=Fortran,caption={ex1.f90}]
+program ex1
+  use mymath
+  implicit none
+  print *, square(2.3), pi
+end program ex1
+\end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Controlling access: \texttt{private}, \texttt{public}, and \texttt{use, only}}
+  \begin{columns}[T]
+    \column{0.50\textwidth}
+    \begin{block}{In the module}
+      \begin{itemize}
+        \item Everything in a module is \texttt{public} by default.
+        \item A bare \texttt{private} statement hides everything from users of the module; \texttt{public ::} then lists what it offers.
+      \end{itemize}
+    \end{block}
+    \begin{block}{In the code that uses it}
+      \begin{itemize}
+        \item \texttt{use shapes, only: sphere\_volume} imports only the listed names.
+        \item Avoids name clashes and shows where each name comes from.
+      \end{itemize}
+    \end{block}
+
+    \column{0.50\textwidth}
+\begin{lstlisting}[language=Fortran]
+module shapes
+  implicit none
+  private
+  public :: sphere_volume
+  real, parameter :: pi = 3.14159   ! private
+contains
+  real function sphere_volume(r)
+    real, intent(in) :: r
+    sphere_volume = 4.0 / 3.0 * pi * r**3
+  end function sphere_volume
+end module shapes
+
+program ex2
+  use shapes, only: sphere_volume
+  implicit none
+  print *, sphere_volume(2.0)
+end program ex2
+\end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\section{Internal vs Module Procedures}
+
+\begin{frame}{Choosing a Procedure Placement}
+  \begin{block}{Internal procedures}
+    \begin{itemize}
+      \item Defined after \texttt{contains} in a \texttt{program} or inside another procedure.
+      \item See the variables of their host (host association); great for small helpers tightly coupled to one unit.
+    \end{itemize}
+  \end{block}
+  \begin{block}{Module procedures}
+    \begin{itemize}
+      \item Defined after \texttt{contains} in a \texttt{module}; reusable in any program unit via \texttt{use}.
+      \item Control visibility with \texttt{public}/\texttt{private}.
+    \end{itemize}
+  \end{block}
+  \begin{block}{Explicit interfaces}
+    Both kinds have an \textbf{explicit interface}: the compiler knows the arguments of the procedure and checks every call against them.
+  \end{block}
+\end{frame}
+
+
+\section{Subroutines}
+
+\begin{frame}[fragile]{Subroutines: Syntax and Example}
+  \begin{block}{General form}
+\begin{lstlisting}[language=Fortran]
+subroutine proc_name(dummy_args)
+  ! declare dummy arguments
+  ! local declarations
+  ! executable statements
+end subroutine proc_name
+\end{lstlisting}
+  \end{block}
+  \begin{block}{Internal subroutine inside a program}
+\begin{lstlisting}[language=Fortran]
+program figures
+  implicit none
+  call output_figures([1.0, 2.0, 3.0])
+contains
+  subroutine output_figures(numbers)
+    real, dimension(:), intent(in) :: numbers
+    print *, "Here are the figures", numbers
+  end subroutine output_figures
+end program figures
+\end{lstlisting}
+  \end{block}
+\end{frame}
+
+\section{Functions}
+
+\begin{frame}[fragile]{Functions: Syntax}
+\begin{block}{Return via \texttt{result(variable\_name)}}
+\begin{lstlisting}[language=Fortran]
+function fun(a, b) result(res)
+  real, intent(in) :: a, b
+  real :: res
+  res = sqrt(a**2 + b**2)
+end function fun
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Return via function name}
+\begin{lstlisting}[language=Fortran]
+real function fun(a, b)
+  real, intent(in) :: a, b
+  fun = sqrt(a**2 + b**2)
+end function fun
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\section{Passing Arguments}
+
+\begin{frame}[fragile]{Dummy Arguments and \texttt{intent}}
+  \begin{columns}[T]
+    % Left column
+    \column{0.48\textwidth}
+    \begin{block}{Intent attributes}
+      \begin{itemize}
+        \item \texttt{intent(in)}: argument is read-only inside the procedure.
+        \item \texttt{intent(out)}: argument is written (output) by the procedure.
+        \item \texttt{intent(inout)}: argument is both read and modified.
+      \end{itemize}
+    \end{block}
+    \begin{block}{Assumed-shape arrays}
+      \texttt{v(:)} takes its shape from the caller. This needs an explicit interface: put the procedure in a module.
+    \end{block}
+
+    % Right column
+    \column{0.52\textwidth}
+    \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+module vectors
+  implicit none
+contains
+  subroutine scale(alpha, v)
+    real, intent(in)    :: alpha
+    real, intent(inout) :: v(:)
+    v = alpha * v
+  end subroutine scale
+end module vectors
+
+program ex
+  use vectors
+  implicit none
+  real :: v(3) = [1.0, 2.0, 3.0]
+  call scale(2.0, v)
+  print *, v
+end program ex
+\end{lstlisting}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+
+\section{Recursive, Pure, Elemental}
+
+\begin{frame}[fragile]{Recursive Functions}
+  \begin{columns}[T]
+    \column{0.45\textwidth}
+    \begin{block}{Concept}
+      \begin{itemize}
+        \item Functions that call themselves.
+        \item Useful for algorithms defined inductively
+              (e.g. factorial, Fibonacci).
+        \item Must be declared with the keyword
+              \texttt{recursive} (the default from Fortran 2018,
+              but \texttt{gfortran} still requires it).
+        \item Must include a termination condition to
+              prevent infinite recursion.
+      \end{itemize}
+    \end{block}
+
+    \column{0.55\textwidth}
+    \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+recursive function factorial(n) result(f)
+  integer, intent(in) :: n
+  integer :: f
+
+  if (n <= 1) then
+    f = 1
+  else
+    f = n * factorial(n - 1)
+  end if
+end function factorial
+\end{lstlisting}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Pure Functions}
+  \begin{columns}[T]
+    \column{0.45\textwidth}
+    \begin{block}{Concept}
+      \begin{itemize}
+        \item Declared with the keyword \texttt{pure}.
+        \item No side effects: cannot alter global variables
+              or perform I/O, and all arguments must be
+              \texttt{intent(in)}.
+        \item Return the same result given the same
+              arguments and module data.
+        \item Safe for parallel execution.
+      \end{itemize}
+    \end{block}
+
+    \column{0.55\textwidth}
+    \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+pure function fun(x, y) result(r)
+  real, intent(in) :: x, y
+  real :: r
+
+  r = sqrt(x**2 + y**2)
+end function fun
+\end{lstlisting}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Elemental Functions}
+  \begin{columns}[T]
+    \column{0.45\textwidth}
+    \begin{block}{Concept}
+      \begin{itemize}
+        \item Declared with the keyword \texttt{elemental}.
+        \item Applied element-wise to array arguments.
+        \item Dummy arguments are scalars; actual arguments may be scalars or conformable arrays.
+        \item Implies \texttt{pure}.
+        \item Very useful for concise array programming.
+      \end{itemize}
+    \end{block}
+
+    \column{0.55\textwidth}
+    \begin{block}{Example}
+\begin{lstlisting}[language=Fortran]
+module test
+  implicit none
+contains
+  elemental real function square(x)
+    real, intent(in) :: x
+    square = x*x
+  end function
+end module test
+
+program ex
+  use test
+  implicit none
+  real, dimension(3) :: x = [1.0, 2.0, 3.0]
+  print *, square(x)
+end program ex
+\end{lstlisting}
+
+    \end{block}
+  \end{columns}
+\end{frame}
+
+
+\section{Exercises}
+\begin{frame}{Exercises: Modules, Subroutines, and Functions}
+\begin{block}{Tasks}
+\begin{enumerate}
+\item Write a module \texttt{mymath} in a \texttt{mymath.f90} file containing:
+\begin{itemize}
+\item a parameter \texttt{pi = 3.14159},
+\item a function \texttt{circle\_area(r)} that returns the area of a circle.
+\end{itemize}
+\item Create a main program in a \texttt{test\_mymath.f90} file that uses the module and prints the area of a circle with radius 2.0.
+\item Compile and link the module and program
+\end{enumerate}
+\end{block}
+\end{frame}
+
+
+\begin{frame}{Exercises: Recursive Functions}
+\begin{block}{Tasks}
+\begin{enumerate}
+\item Write a recursive function \texttt{factorial(n)} that computes $n!$.
+\item Test the function by computing $5!$ and $10!$.
+\item Modify the function to handle invalid inputs (e.g.\ $n < 0$).
+\item Write a recursive function \texttt{fibonacci(n)} that returns the $n$th Fibonacci number.
+\item Compare the recursive implementation with an iterative one.
+\end{enumerate}
+\end{block}
+\end{frame}
+
+
+\end{document}
