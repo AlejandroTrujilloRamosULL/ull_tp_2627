@@ -4,7 +4,7 @@
 make all
 make random_sphere
 
-n_particles=(1000 2000 5000)
+n_particles=(1000 2000 5000 10000)
 n_threads=(1 2 4 8)
 seed=42
 
