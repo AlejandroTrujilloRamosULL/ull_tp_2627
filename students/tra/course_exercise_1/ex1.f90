@@ -1,16 +1,19 @@
-! Main program of first scored exercise
+! Main program of first scored exercise.
 
 ! In this program we are going to modify the leapfrog.f90 source code to make it compatible with the use of the geometry and particle modules where
-! we have defined our vector and point types and the operations between them and with real numbers
+! we have defined our vector and point types and the operations between them and with real numbers.
 
-! The leapfrog scheme ... (finish)
-! I NEED TO ADD A SOFTENING LENGTH (MAYBE)
+! The leapfrog scheme is an integration algorithm which uses a kick-drift scheme.
+! It differentiates itself from other methods because of its symplectic nature.
+! This means that it conserves the energy of the Hamiltonian of the dynamical system.
+! This leads to it being a very reliable method due to it no drifting away over time.
 
-! ADDITION (work in progress): We have also added as an extra task an improvement on the method, with the contribution 
-! from Haruo Yoshida with his upgrade on the accuracy of symplectic integrators 
-! (Yoshida's contribution is of 4th order, compared to the 2nd order leapfrog method)
-! The method is selected at the command line (second, optional argument): "leapfrog" (default) or "yoshida"
-! see (https://en.wikipedia.org/wiki/Leapfrog_integration)
+! We have also added as an extra task an improvement on the method, with the contribution .
+! from Haruo Yoshida with his upgrade on the accuracy of symplectic integrators .
+! (Yoshida's contribution is of 4th order, compared to the 2nd order leapfrog method).
+! The method is selected at the command line (optional argument): "leapfrog" (default) or "yoshida".
+
+! Information on both schemes can be found in (https://en.wikipedia.org/wiki/Leapfrog_integration).
 
 ! =====================================================================
 ! Reference for the Yoshida 4th-Order Symplectic Integrator:
@@ -19,6 +22,9 @@
 ! Journal: Physics Letters A, Volume 150, Issues 5-7, 1990, Pages 262-268
 ! DOI: https://doi.org/10.1016/0375-9601(90)90092-3
 ! =====================================================================
+
+! What we are doing in this code is take initial conditions of positions from particles at rest, integrate them unitl 
+! a certain interval of time and output the results (it includes parallelization via OpenMP).
 
 program leapfrog
     !$ use omp_lib
@@ -30,10 +36,10 @@ program leapfrog
 
     real(kind=dp) :: dt, dt_out, t_end
     !$ real(kind=dp) :: t_start, t_final
-    integer :: u, w, n, i, step, n_steps, out_every, all_stat_m, all_stat_r, all_stat_v, all_stat_a, open_status, open_status_out
+    integer :: u, w, n, i, step, n_steps, out_every, all_stat_p, all_stat_a, open_status, open_status_out
     character(len=256) :: file_name, output_file_name
     character(len=32) :: method
-    character(len=*), parameter :: fmt = "(*(3f12.8))"
+    character(len=*), parameter :: fmt = "(*(4f12.8))"
     logical :: found
 
     ! OWN ADDITION: Yoshida 4th-order coefficients (see reference above for values and definitions)
@@ -41,14 +47,13 @@ program leapfrog
     real(kind=dp), dimension(4) :: c_yoshida
     real(kind=dp), dimension(3) :: d_yoshida
 
-    real(kind=dp), dimension(:), allocatable :: m      ! mass
-    type(point3d), dimension(:), allocatable :: r      ! position
-    type(vector3d), dimension(:), allocatable :: v, a  ! velocity, acceleration
+    type(particle3d), dimension(:), allocatable :: particles 
+    type(vector3d), dimension(:), allocatable :: a
 
     ! firstly we set the calling of arguments for the command line calling
-    ! OWN ADDITION: the method (leapfrog or yoshida) is now an optional 2nd argument leapfrog
+    ! OWN ADDITION: the method (leapfrog or yoshida) is now an optional 2nd argument
     if (command_argument_count() < 1 .or. command_argument_count() > 2) then
-        print *, "Usage: ./leapfrog <input_file> [method]"
+        print *, "Usage: ./ex1 <input_file> [method] or ./ex1_omp <input_file> [method]"
         print *, " Integration method is optional: 'leapfrog' (set by default if no method is defined) or 'yoshida'"
         stop "Command line is not correctly written. & 
               & Try again adding the input file name as an argument in the command line as shown above."
@@ -89,18 +94,16 @@ program leapfrog
     read (u, *) n
 
     ! allocation of the arrays that define the particle's mass, positions and velocities (as we now know the number of particles n)
-    allocate(m(n), stat=all_stat_m)
-    if (all_stat_m /= 0) stop "Allocation of mass array was unsuccesful."
-    allocate(r(n), stat=all_stat_r)
-    if (all_stat_r /= 0) stop "Allocation of positions array was unsuccesful."
-    allocate(v(n), stat=all_stat_v)
-    if (all_stat_v /= 0) stop "Allocation of velocities array was unsuccesful."
+    allocate(particles(n), stat=all_stat_p)
+    if (all_stat_p /= 0) stop "Allocation of particles array was unsuccesful."
+
     allocate(a(n), stat=all_stat_a)
-    if (all_stat_a /= 0) stop "Allocation of accelerations array was unsuccesful."
+    if (all_stat_a /= 0) stop "Allocation of accelerations array was unsuccessful."
 
     ! now we read from the file the characteristics of the n particles, mass, positions and velocities (m, x, y, z, vx, vy, vz)
     do i=1, n
-        read (u, *) m(i), r(i)%x, r(i)%y, r(i)%z, v(i)%x, v(i)%y, v(i)%z
+        read (u, *) particles(i)%m, particles(i)%p%x, particles(i)%p%y, particles(i)%p%z, & 
+                    particles(i)%v%x, particles(i)%v%y, particles(i)%v%z
     end do
 
     close(u) ! closing of the input file
@@ -110,16 +113,16 @@ program leapfrog
     out_every = max(1, nint(dt_out/dt)) ! maximum of rounding to the nearest integer the quotient between (time of printed outputs/time step) or 1
 
     ! OWN ADDITION: Yoshida 4th-order coefficients, computed once before the step loop (see the values in the reference paper or the Wiki page attached)
-    w0 = -(2.0_dp**(1.0_dp/3.0_dp)) / (2.0_dp - 2.0_dp**(1.0_dp/3.0_dp))
-    w1 = 1.0_dp / (2.0_dp - 2.0_dp**(1.0_dp/3.0_dp))
-    c_yoshida = [w1/2.0_dp, (w0+w1)/2.0_dp, (w0+w1)/2.0_dp, w1/2.0_dp]
+    w0 = -(2.0_dp**(1.0_dp/3.0_dp))/(2.0_dp - 2.0_dp**(1.0_dp/3.0_dp))
+    w1 = 1.0_dp/(2.0_dp - 2.0_dp**(1.0_dp/3.0_dp))
+    c_yoshida = [w1/2.0_dp, (w0 + w1)/2.0_dp, (w0 + w1)/2.0_dp, w1/2.0_dp]
     d_yoshida = [w1, w0, w1]
 
     ! here we calculate the initial accelerations to use at the first step of the integration, which at posterior steps will be updated
     ! for parallelization we will use a reduction clause to avoid a race condition from happening
     ! also we are scheduling dynamically as iterations over pairs are uneven in workload (first iterations work more than others)
     ! we defined a subroutine below as Yoshida's method uses the loop various times
-    call accelerations(r, m, n, a)
+    call accelerations(particles, n, a)
 
     ! we create an output file where the results can be written inside it
     write(unit=output_file_name, fmt="(a)") "output.dat" ! CAREFUL as it is overwritten if ran with and without openmp
@@ -130,50 +133,36 @@ program leapfrog
     ! here we implement the chosen integration method
     if (trim(method) == "leapfrog") then
         do step=1, n_steps
-            v = v + a*dt/2.0_dp ! kick
-            r = r + v*dt        ! drift
-            call compute_accelerations(r, m, n, a)
-            v = v + a*dt/2.0_dp ! kick
+            particles%v = particles%v + a*dt/2.0_dp ! kick
+            particles%p = particles%p + particles%v*dt        ! drift
+            call accelerations(particles, n, a)
+            particles%v = particles%v + a*dt/2.0_dp ! kick
 
-            ! storing in an output.dat file the time and positions of the planets as (t, p1x, p1y, p1z, ..., pnx, pny, pnz) where p indicates planet
+            ! storing in an output.dat file the time and positions as (t, p1x, p1y, p1z, ..., pnx, pny, pnz) where p indicates particles
             if (mod(step, out_every)==0) then
-                write (w, "(f12.6)", advance="no") step*dt
-                do i=1, n
-                    if (i==n) then
-                        write (w, fmt) r(i)%x, r(i)%y, r(i)%z
-                    else 
-                        write (w, fmt, advance="no") r(i)%x, r(i)%y, r(i)%z
-                    end if
-                end do
+                write (w, fmt) step*dt, particles(1:n)%p%x, particles(1:n)%p%y, particles(1:n)%p%z
             end if
         end do
     else ! yoshida method
         do step=1, n_steps
             ! OWN ADDITION: Yoshida 4th-order method
-            r = r + c_yoshida(1)*v*dt ! drift
-            call accelerations(r, m, n, a)
-            v = v + d_yoshida(1)*a*dt ! kick
+            particles%p = particles%p + c_yoshida(1)*particles%v*dt ! drift
+            call accelerations(particles, n, a)
+            particles%v = particles%v + d_yoshida(1)*a*dt ! kick
 
-            r = r + c_yoshida(2)*v*dt ! drift
-            call accelerations(r, m, n, a)
-            v = v + d_yoshida(2)*a*dt ! kick
+            particles%p = particles%p + c_yoshida(2)*particles%v*dt ! drift
+            call accelerations(particles, n, a)
+            particles%v = particles%v + d_yoshida(2)*a*dt ! kick
 
-            r = r + c_yoshida(3)*v*dt ! drift
-            call accelerations(r, m, n, a)
-            v = v + d_yoshida(3)*a*dt ! kick
+            particles%p = particles%p + c_yoshida(3)*particles%v*dt ! drift
+            call accelerations(particles, n, a)
+            particles%v = particles%v + d_yoshida(3)*a*dt ! kick
 
-            r = r + c_yoshida(4)*v*dt ! drift
+            particles%p = particles%p + c_yoshida(4)*particles%v*dt ! drift
 
-            ! storing in an output.dat file the time and positions of the planets as (t, p1x, p1y, p1z, ..., pnx, pny, pnz) where p indicates particle
+            ! storing in an output.dat file the time and positions as (t, p1x, p1y, p1z, ..., pnx, pny, pnz) where p indicates particles
             if (mod(step, out_every)==0) then
-                write (w, "(f12.6)", advance="no") step*dt
-                do i=1, n
-                    if (i==n) then
-                        write (w, fmt) r(i)%x, r(i)%y, r(i)%z
-                    else 
-                        write (w, fmt, advance="no") r(i)%x, r(i)%y, r(i)%z
-                    end if
-                end do
+                write (w, fmt) step*dt, particles(1:n)%p%x, particles(1:n)%p%y, particles(1:n)%p%z
             end if
         end do
     end if
@@ -184,16 +173,14 @@ program leapfrog
 
 contains
 
-    subroutine accelerations(r_sub, m_sub, n_sub, a_sub)
+    subroutine accelerations(particles_sub, n_sub, a_sub)
     !! subroutine to calculate the accelerations between every pair of particles i and j
     !! for parallelization we will use a reduction clause to avoid a race condition from happening
     !! also we are scheduling dynamically as iterations over pairs are uneven in workload (first iterations work more than others)
 
         !! arguments
-        type(point3d), dimension(:), intent(in) :: r_sub
-        !! (in) positions of the n particles
-        real(kind=dp), dimension(:), intent(in) :: m_sub
-        !! (in) masses of the n particles
+        type(particle3d), dimension(:), intent(in) :: particles_sub
+        !! (in) particles array with masses, positions and velocities
         integer, intent(in) :: n_sub
         !! (in) number of particles
         type(vector3d), dimension(:), intent(out) :: a_sub
@@ -202,19 +189,20 @@ contains
         !! local variables
         integer :: ii, jj
         real(kind=dp) :: dist, dist3
-        type(vector3d) :: rji_sub
+        type(vector3d) :: rji
 
         a_sub%x = 0.0_dp
         a_sub%y = 0.0_dp
         a_sub%z = 0.0_dp
-        !$omp parallel do reduction(+:a_sub) schedule(dynamic) private(jj, rji_sub, dist, dist3)
+
+        !$omp parallel do reduction(+:a_sub) schedule(dynamic) private(jj, rji, dist, dist3)
         do ii=1, n_sub
             do jj=ii+1, n_sub
-                rji_sub = r_sub(jj) - r_sub(ii) 
-                dist = distance(r_sub(jj), r_sub(ii)) 
+                rji = particles_sub(jj)%p - particles_sub(ii)%p 
+                dist = distance(particles_sub(jj)%p, particles_sub(ii)%p) 
                 dist3 = dist**3
-                a_sub(ii) = a_sub(ii) + m_sub(jj)*rji_sub/dist3
-                a_sub(jj) = a_sub(jj) - m_sub(ii)*rji_sub/dist3
+                a_sub(ii) = a_sub(ii) + particles_sub(jj)%m*rji/dist3
+                a_sub(jj) = a_sub(jj) - particles_sub(ii)%m*rji/dist3
             end do
         end do
         !$omp end parallel do
