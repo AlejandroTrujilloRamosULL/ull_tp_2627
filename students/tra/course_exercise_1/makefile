@@ -15,7 +15,7 @@ ex1: $(OBJECTS)
 	$(FC) $(FCFLAGS) -o $@ $^
 
 # executable (with -fopenmp flag)
-# shares kinds, geometry and particle objects since only ex1.f90 is parallelised
+# shares kinds and particle objects since only ex1.f90 and geometry_omp (due to the declare reduction) is parallelised
 ex1_omp: kinds.o geometry_omp.o particle.o ex1_omp.o
 	$(FC) $(FCFLAGS) $(OPENMPFLAG) -o $@ $^
 
@@ -35,7 +35,7 @@ geometry_omp.o: geometry.f90
 random_sphere.o: random_sphere.f90
 	$(FC) $(FCFLAGS) -c $<
 
-# dedicating a separate rule for openmp executable (non-matching names)
+# dedicating a separate rule for openmp executable (non-matching names for target and executable)
 ex1_omp.o: ex1.f90
 	$(FC) $(FCFLAGS) $(OPENMPFLAG) -c $< -o $@
 
