@@ -102,13 +102,14 @@ $$\mathbf{a}_i = \sum_{j \neq i} m_j \frac{\mathbf{r}_j - \mathbf{r}_i}{|\mathbf
 Haruo Yoshida devised a method (1990) to construct explicit higher order symplectic integrators. He noticed that if the correct coefficients were used, terms of linear and third order would cancel and a fourth order method could be utilized.  
 The equations for the 4th order integrator to update position and velocity are:
 
-$$r_i^1 = r_i + c_1 v_i \Delta t, \qquad v_i^1 = v_i + d_1\, a_i^1\, \Delta t,$$
-
-$$r_i^2 = r_i^1 + c_2 v_i^1 \Delta t, \qquad v_i^2 = v_i^1 + d_2\, a_i^2\, \Delta t,$$
-
-$$r_i^3 = r_i^2 + c_3 v_i^2 \Delta t, \qquad v_i^3 = v_i^2 + d_3\, a_i^3\, \Delta t,$$
-
-$$r_{i+1} \equiv r_i^4 = r_i^3 + c_4 v_i^3 \Delta t, \qquad v_{i+1} \equiv v_i^4 = v_i^3$$
+$$
+\begin{aligned}
+r_i^1 &= r_i + c_1 v_i \Delta t, &\quad v_i^1 &= v_i + d_1 a_i^1 \Delta t, \\
+r_i^2 &= r_i^1 + c_2 v_i^1 \Delta t, &\quad v_i^2 &= v_i^1 + d_2 a_i^2 \Delta t, \\
+r_i^3 &= r_i^2 + c_3 v_i^2 \Delta t, &\quad v_i^3 &= v_i^2 + d_3 a_i^3 \Delta t, \\
+r_{i+1} \equiv r_i^4 &= r_i^3 + c_4 v_i^3 \Delta t, &\quad v_{i+1} \equiv v_i^4 &= v_i^3
+\end{aligned}
+$$
 
 where $r_i, v_i$ are the starting position and velocity, $r_i^n, v_i^n$ are intermediary position and velocity at intermediary step $n$, $a_i^n$ is the acceleration at the position $r_i^n$, and $r_{i+1}, v_{i+1}$ are the final position and velocity under one 4th order Yoshida step. This method requires **three** acceleration evaluations per step.
 
@@ -119,6 +120,8 @@ $$w_0 \equiv -\frac{\sqrt[3]{2}}{2-\sqrt[3]{2}}, \qquad w_1 \equiv \frac{1}{2-\s
 $$c_1 = c_4 \equiv \frac{w_1}{2}, \qquad c_2 = c_3 \equiv \frac{w_0+w_1}{2},$$
 
 $$d_1 = d_3 \equiv w_1, \qquad d_2 \equiv w_0.$$
+
+**Comment:** Yoshida's method is much more accurate than the leapfrog scheme, due to it being a higher order one. Unfortunately, in this exercise the difference in precision might be not that noticeable, and the time of execution of the Yoshida method is going to be larger due to it needing of more intermediate steps to calculate the next step of each variable. Consequently, we omit here a comparison between the runtimes and accuracy of the methods, as a fair comparison would require tuning the timestep for equivalent error tolerances. So, rather, take this as a fun implementation for this exercise, which could be useful in problems that might need more precision or consider more complex systems.
 
 ---
 
