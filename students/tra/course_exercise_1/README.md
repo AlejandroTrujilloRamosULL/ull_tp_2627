@@ -1,6 +1,6 @@
 # **Direct N-body simulation with OpenMP**
 
-This repository contains the first scored exercise of the *Técnicas de Programación* class from *Máster de Astrofísica* (**STILL NOT FINISHED**). All the files needed for running the simulation are contained in here.
+This repository contains the first scored exercise of the *Técnicas de Programación* class from *Máster de Astrofísica*. All the files needed for running the simulation are contained in here.
 
 This repository, as stated in the title, was created to make a calculation of the orbits of n bodies, given their initial conditions. These are parallelized via OpenMP, and the efficiency is tested by using a different number of threads and presenting the different run times.
 
@@ -8,7 +8,7 @@ This repository, as stated in the title, was created to make a calculation of th
 
 ## Workings of the Code and Contents
 
-This code is mainly an n-body integrator. It uses a main program **ex1.f90**, which uses a leapfrog algorithm, either the common 2nd order algorithm of Yoshida's 4th order integration algorithm (own implementation). It depends on some modules (listed below) and a source file **random_sphere.f90** which creates the initial conditions for a given number of particles and a given seed (for random number generation and uniformity in the testing with different cases) which are used for the execution of the main program to produce outputs.
+This code is mainly an n-body integrator. It uses a main program **ex1.f90**, which uses a leapfrog algorithm, either the common 2nd order algorithm or Yoshida's 4th order integration algorithm (own implementation). It depends on some modules (listed below) and a source file **random_sphere.f90** which creates the initial conditions for a given number of particles and a given seed (for random number generation and uniformity in the testing with different cases) which are used for the execution of the main program to produce outputs.
 
 ### Modules
 
@@ -24,7 +24,7 @@ This code makes use of various modules for the execution of the main program, an
 - `random_sphere.f90`: initial conditions algorithm which creates particles inside a sphere at random positions uniformly, initially at rest and with equal mass, given a number of particles and a seed.
 - `ex1.f90`: main program which contains the leapfrog algorithm (both the 2nd order one and the Yoshida algorithm, implemented by the author) and the calculations to give the **output.dat** file in the serial and parallelized case.
 
-### Make file and Shell Script
+### Makefile and Shell Script
 
 - `makefile`: makes the modules and executables building and linking easy by writing the command `make` in the terminal. To erase the outputs and run from scratch again just run the command `make clean`.
 - `run_tests.sh`: shell script to automatize the running of tests for different number of particles and number of threads. By default, it uses the values asked to use in the task, but the user might modify it as he/she pleases.
@@ -41,14 +41,14 @@ make all
 
 This produces `ex1` (compiled without `-fopenmp` flag) and `ex1_omp` (compiled with `-fopenmp` flag).
 
-Generate an initial-conditions file (example for N=1000, seed=42) writing it into `sphere_1000.dat` file by:
+Generate an initial conditions file (example for N=1000, seed=42) writing it into `sphere_1000.dat` file by:
 
 ```bash
 make random_sphere
 ./random_sphere 1000 42 > sphere_1000.dat
 ```
 
-the `make random_sphere` command needs to be executed just the first time of generating an initial conditions file.
+the `make random_sphere` command needs to be executed **only** the first time of generating an initial conditions file.
 
 Run without OpenMP:
 
@@ -75,17 +75,21 @@ The command line for running the simulation takes two arguments actually, the in
 ```
 ./ex1 <ic_file> [method]
 ```
-where `[method]` is an optional argument. It can take the string values `leapfrog` to use the common 2nd order integrator, or `yoshida` to use Yoshida's method. If no method is specified, `leapfrog` is used as default.
+or
+```
+./ex1_omp <ic_file> [method]
+```
+where `[method]` is an optional argument. It can take the string values `leapfrog`, to use the common 2nd order integrator, or `yoshida`, to use Yoshida's method. If no method is specified, `leapfrog` is used as default.
 
 ---
 
-## Integration methods (STILL NOT FINISHED)
+## Integration methods
 
 ### Leapfrog (2nd order)
 
 The leapfrog method updates velocity and position by defining a kick-drift-kick sequence. The kick updates the velocity, indicating that the gravity gave the particle a push, and the drift updates the position, where the particle coasts with the current velocity,. The method outlined in order for every leapfrog step is:
 
-$$v_{i+1/2} = v_i + a_i \frac{\Delta t}{2}, \\ r_{i+1} = r_i + v_{i+1/2} \Delta t, \\ a_{i+1}  \text{ calculated from } r_{i+1}, \\ v_{i+1} = v_{i+1/2} + a_{i+1} \frac{\Delta t}{2},$$
+$$v_{i+1/2} = v_i + a_i \frac{\Delta t}{2}, \\ r_{i+1} = r_i + v_{i+1/2} \Delta t, \\ a_{i+1} = a(r_{i+1}), \\ v_{i+1} = v_{i+1/2} + a_{i+1} \frac{\Delta t}{2},$$
 
 where $r_i, v_i$ are the starting position and velocity, $a_i$ is the acceleration at position $r_i$, and $r_{i+1}, v_{i+1}$ are the updated position and velocity after one leapfrog step. This requires an acceleration evaluation per step, which is calculated via:
 
@@ -142,7 +146,7 @@ and checking the permissions of the file.
 
 This script builds all executables, generates the initial conditions files above automatically, and runs the simulation across n_particles = 1000, 2000, 5000, 10000 and n_threads = 1, 2, 4, 8. So shortly, it does the timing test of the different use of threads and for a different number of particles automatically. Different values can be used for n_particles and n_threads just by changing them inside the file.
 
-Timing is measured using `omp_get_wtime()`, which can be found inside the main simulation loop in `ex1.f90`. `dt_out` was set equal to `t_end` in `random_sphere.f90` so that output writing does not dominate the measured time.
+Timing is measured using `omp_get_wtime()`, which can be found inside the main simulation loop in `ex1.f90`. `dt_out` was set equal to `t_end` inside the `run_tests.sh` shell script for `random_sphere.f90` so that output writing does not dominate the measured time.
 
 ---
 
@@ -171,4 +175,4 @@ By the execution of the `./run_tests.sh` command it prints the execution time fo
 | 10000 | 4       | 184.3949 |
 | 10000 | 8       | 150.5765 |
 
-In terms of the results, we observe what was expected, a higher number of threads gives a shorter amount of time for execution. (**STILL TO BE FINISHED**) 
+In terms of the results, we observe what was expected, a higher number of threads gives a shorter amount of time for execution. The highest difference of performance in terms of cpu time for the `n_threads=1` and `n_threads=2, 4, 8` cases happens when `n_particles=1000`, and it decreases from there at higher number of particles considered. Although, something interesting to remark is the widening difference between the `n_threads=2`, `n_threads=4` and `n_threads=8` cases as `n_particles` increases its value. Looking at the single thread `n_threads=1` case, the timing results verify the $\mathcal{O}(N^2)$ scaling. See how at `n_particles=1000` the time value is of `6.5`, for `n_particles=2000` of `25.8` (would be equal to the `n_thread=1` time value times 4 due to `n_particles=2000` doubling the number of particles) and so on, which tells us that the simulation relies on a direct interaction between the n-bodies. We can also see that adding more threads has diminishing returns. For example, jumping from `n_threads=1` to `n_threads=2` cuts the execution time almost in half, but jumping from `n_threads=4` to `n_threads=8` doesn't give nearly as big of a time saving, showing that there is a limit to how much parallelization can help. Overall, these results show that OpenMP parallelization is crucial for handling heavier workloads like `n_particles=10000`, saving massive amounts of time compared to the single thread execution.
