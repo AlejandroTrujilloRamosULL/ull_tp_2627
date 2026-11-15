@@ -135,7 +135,7 @@ $$c_1 = c_4 \equiv \frac{w_1}{2}, \qquad c_2 = c_3 \equiv \frac{w_0+w_1}{2},$$
 
 $$d_1 = d_3 \equiv w_1, \qquad d_2 \equiv w_0.$$
 
-**Comment:** Yoshida's method is much more accurate than the leapfrog scheme, due to it being a higher order one. Unfortunately, in this exercise the difference in precision might be not that noticeable, and the time of execution of the Yoshida method is going to be larger due to it needing of more intermediate steps to calculate the next step of each variable. Consequently, we omit here a comparison between the runtimes and accuracy of the methods, as a fair comparison would require tuning the timestep for equivalent error tolerances. So, rather, take this as a fun implementation for this exercise, which could be useful in problems that might need more precision or consider more complex systems.
+**Comment:** Yoshida's method is much more accurate than the leapfrog scheme, due to it being a higher order one. Unfortunately, in this exercise the difference in precision might be not that noticeable, and the time of execution of the Yoshida method is going to be larger due to it needing of more intermediate steps to calculate the next step of each variable. Consequently, we omit here a detailed comparison between the accuracies of the methods, as a fair comparison would require tuning the timestep for equivalent error tolerances. So, rather, we only compare runtimes. Take this as a fun implementation for this exercise, which could be useful in problems that might need more precision or consider more complex systems.
 
 ---
 
