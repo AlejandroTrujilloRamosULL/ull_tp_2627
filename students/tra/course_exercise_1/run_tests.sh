@@ -12,7 +12,10 @@ make random_sphere
 
 n_particles=(1000 2000 5000 10000)
 n_threads=(1 2 4 8)
+integrators=("leapfrog" "yoshida")
 seed=42
+
+# WARNING: if the 10000 particles case is used, the loop might take a long time due to this case being computationally heavy for both methods
 
 # for loop to generate the random sphere initial conditions automatically
 for particle in "${n_particles[@]}"
@@ -20,22 +23,30 @@ do
     ./random_sphere $particle $seed > "sphere_${particle}.dat"
 done
 
-# for loop to run simulation with n number of particles and n threads
-for particle in "${n_particles[@]}"
-do 
+# for loop to run simulation with n number of particles and n threads for the different integrators
+for integrator in "${integrators[@]}"
+do
     echo
     echo "----------"
-    echo "n=$particle"
+    echo "integrator=$integrator"
     echo "----------"
 
-    input="sphere_${particle}.dat"
-
-    for thread in "${n_threads[@]}"
-    do
+    for particle in "${n_particles[@]}"
+    do 
         echo
-        echo "n_threads=$thread"
         echo "----------"
-        OMP_NUM_THREADS=$thread ./ex1_omp "$input" leapfrog
+        echo "n=$particle"
+        echo "----------"
+
+        input="sphere_${particle}.dat"
+
+        for thread in "${n_threads[@]}"
+        do
+            echo
+            echo "n_threads=$thread"
+            echo "----------"
+            OMP_NUM_THREADS=$thread ./ex1_omp "$input" "$integrator"
+        done
     done
 done
 
