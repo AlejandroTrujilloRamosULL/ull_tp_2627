@@ -89,7 +89,21 @@ where `[method]` is an optional argument. It can take the string values `leapfro
 
 The leapfrog method updates velocity and position by defining a kick-drift-kick sequence. The kick updates the velocity, indicating that the gravity gave the particle a push, and the drift updates the position, where the particle coasts with the current velocity,. The method outlined in order for every leapfrog step is:
 
-$$v_{i+1/2} = v_i + a_i \frac{\Delta t}{2}, \\ r_{i+1} = r_i + v_{i+1/2} \Delta t, \\ a_{i+1} = a(r_{i+1}), \\ v_{i+1} = v_{i+1/2} + a_{i+1} \frac{\Delta t}{2},$$
+$$
+v_{i+1/2} = v_i + a_i \frac{\Delta t}{2},
+$$
+
+$$
+r_{i+1} = r_i + v_{i+1/2} \Delta t,
+$$
+
+$$
+a_{i+1} = a(r_{i+1}),
+$$
+
+$$
+v_{i+1} = v_{i+1/2} + a_{i+1} \frac{\Delta t}{2},
+$$
 
 where $r_i, v_i$ are the starting position and velocity, $a_i$ is the acceleration at position $r_i$, and $r_{i+1}, v_{i+1}$ are the updated position and velocity after one leapfrog step. This requires an acceleration evaluation per step, which is calculated via:
 
@@ -104,10 +118,10 @@ The equations for the 4th order integrator to update position and velocity are:
 
 $$
 \begin{aligned}
-r_i^1 &= r_i + c_1 v_i \Delta t, &\quad v_i^1 &= v_i + d_1 a_i^1 \Delta t, \\
-r_i^2 &= r_i^1 + c_2 v_i^1 \Delta t, &\quad v_i^2 &= v_i^1 + d_2 a_i^2 \Delta t, \\
-r_i^3 &= r_i^2 + c_3 v_i^2 \Delta t, &\quad v_i^3 &= v_i^2 + d_3 a_i^3 \Delta t, \\
-r_{i+1} \equiv r_i^4 &= r_i^3 + c_4 v_i^3 \Delta t, &\quad v_{i+1} \equiv v_i^4 &= v_i^3
+r_i^1 &= r_i + c_1 v_i \Delta t, & v_i^1 &= v_i + d_1 a_i^1 \Delta t, \\
+r_i^2 &= r_i^1 + c_2 v_i^1 \Delta t, & v_i^2 &= v_i^1 + d_2 a_i^2 \Delta t, \\
+r_i^3 &= r_i^2 + c_3 v_i^2 \Delta t, & v_i^3 &= v_i^2 + d_3 a_i^3 \Delta t, \\
+r_{i+1} \equiv r_i^4 &= r_i^3 + c_4 v_i^3 \Delta t, & v_{i+1} \equiv v_i^4 &= v_i^3
 \end{aligned}
 $$
 
@@ -157,7 +171,7 @@ Timing is measured using `omp_get_wtime()`, which can be found inside the main s
 
 By the execution of the `./run_tests.sh` command it prints the execution time for the different number of particles and threads defined inside the `run_tests.sh` file. The output in my case gave the following results:
 
-### Formatted table with OpenMP parallelization results
+### Formatted table with OpenMP parallelization results (**Leapfrog method**)
 
 | n_particles | n_threads | time (s) |
 |-------|---------|----------|
@@ -178,4 +192,27 @@ By the execution of the `./run_tests.sh` command it prints the execution time fo
 | 10000 | 4       | 184.3949 |
 | 10000 | 8       | 150.5765 |
 
-In terms of the results, we observe what was expected, a higher number of threads gives a shorter amount of time for execution. The highest difference of performance in terms of cpu time for the `n_threads=1` and `n_threads=2, 4, 8` cases happens when `n_particles=1000`, and it decreases from there at higher number of particles considered. Although, something interesting to remark is the widening difference between the `n_threads=2`, `n_threads=4` and `n_threads=8` cases as `n_particles` increases its value. Looking at the single thread `n_threads=1` case, the timing results verify the $\mathcal{O}(N^2)$ scaling. See how at `n_particles=1000` the time value is of `6.5`, for `n_particles=2000` of `25.8` (would be equal to the `n_thread=1` time value times 4 due to `n_particles=2000` doubling the number of particles) and so on, which tells us that the simulation relies on a direct interaction between the n-bodies. We can also see that adding more threads has diminishing returns. For example, jumping from `n_threads=1` to `n_threads=2` cuts the execution time almost in half, but jumping from `n_threads=4` to `n_threads=8` doesn't give nearly as big of a time saving, showing that there is a limit to how much parallelization can help. Overall, these results show that OpenMP parallelization is crucial for handling heavier workloads like `n_particles=10000`, saving massive amounts of time compared to the single thread execution.
+Starting with the Leapfrog method, in terms of the results, we observe what was expected, a higher number of threads gives a shorter amount of time for execution. The highest difference of performance in terms of cpu time for the `n_threads=1` and `n_threads=2, 4, 8` cases happens when `n_particles=1000`, and it decreases from there at higher number of particles considered. Although, something interesting to remark is the widening difference between the `n_threads=2`, `n_threads=4` and `n_threads=8` cases as `n_particles` increases its value. Looking at the single thread `n_threads=1` case, the timing results verify the $\mathcal{O}(N^2)$ scaling. See how at `n_particles=1000` the time value is of 6.5, for `n_particles=2000` of 25.8 (would be equal to the `n_thread=1` time value times 4 due to `n_particles=2000` doubling the number of particles) and so on, which tells us that the simulation relies on a direct interaction between the n-bodies. We can also see that adding more threads has diminishing returns. For example, jumping from `n_threads=1` to `n_threads=2` cuts the execution time almost in half, but jumping from `n_threads=4` to `n_threads=8` doesn't give nearly as big of a time saving, showing that there is a limit to how much parallelization can help. Overall, these results show that OpenMP parallelization is crucial for handling heavier workloads like `n_particles=10000`, saving massive amounts of time compared to the single thread execution.
+
+### Formatted table with OpenMP parallelization results (**Yoshida method**)
+
+| n_particles | n_threads | time (s) |
+|-------|---------|----------|
+| 1000  | 1       | 11.2593  |
+| 1000  | 2       | 8.6819   |
+| 1000  | 4       | 3.8282   |
+| 1000  | 8       | 5.2393   |
+| 2000  | 1       | 39.7014  |
+| 2000  | 2       | 23.1146  |
+| 2000  | 4       | 16.2697  |
+| 2000  | 8       | 15.0126  |
+| 5000  | 1       | 246.3170 |
+| 5000  | 2       | 141.5398 |
+| 5000  | 4       | 122.4384 |
+| 5000  | 8       | 131.4778 |
+| 10000 | 1       | 1015.5092|
+| 10000 | 2       | 673.0274 |
+| 10000 | 4       | 459.8337 |
+| 10000 | 8       | 407.9232 |
+
+We start here with the dicussion of the results obtained for the Yoshida 4th order method. The comparison is made with the same timestep and settings as the Leapfrog 2nd order method. Firstly, what is quite noticeable at first glance is the higher runtimes compared to the Leapfrog 2nd order method. This is due to the three evaluations of the forces per step required in the method. In fact, look at the values of the runtimes compared to the 2nd order method, the times are approximately three times longer. Also, in this case, the utilization of multiple threads, `n_threads=2, 4, 8` allows for a much shorter time of computation compared to the other method, it benefits more from the parallelization. It can also be seen the $\mathcal{O}(N^{2})$ scaling, as it was expected, comparing the different `n_particles` cases. It is also interesting to remark that in some cases (`n_particles=1000` and `n_particles=5000`) `n_threads=8` takes a longer time than `n_threads=4`, a possible explanation on it is that, for a relatively small particle count, the workload assigned to each thread is not large enough to outweigh the cost of scheduling the 8 threads, so, wording it plainly, the scheduling of the 8 threads sets the time cosntraint, rather than the particles' mathematical computation. Yoshida's 4th order integrator main capability is the improvement on accuracy. Unfortunately, in this exercise this cannot be seen in great detail, due to the exercise considered, more complex systems which require higher computational power and accuracy might benefit better from the application of this method. Nevertheless, one can assure that it can obtain the same accuracy as the Leapfrog method, with an even larger timestep. This 4th order symplectic integrator even conserves better the energy of the system, not allowing for its drifting with time. As a last comment, we kindly encourage the reader to experiment and play with the timestep or other parameters to see the strengths of this method.
