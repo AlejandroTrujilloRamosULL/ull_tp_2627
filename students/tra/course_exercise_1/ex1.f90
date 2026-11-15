@@ -140,7 +140,7 @@ program leapfrog
 
             ! storing in an output.dat file the time and positions as (t, p1x, p1y, p1z, ..., pnx, pny, pnz) where p indicates particles
             if (mod(step, out_every)==0) then
-                write (w, fmt) step*dt, particles(1:n)%p%x, particles(1:n)%p%y, particles(1:n)%p%z
+                write (w, fmt) step*dt, particles(1:n)%p
             end if
         end do
     else ! yoshida method
@@ -162,7 +162,7 @@ program leapfrog
 
             ! storing in an output.dat file the time and positions as (t, p1x, p1y, p1z, ..., pnx, pny, pnz) where p indicates particles
             if (mod(step, out_every)==0) then
-                write (w, fmt) step*dt, particles(1:n)%p%x, particles(1:n)%p%y, particles(1:n)%p%z
+                write (w, fmt) step*dt, particles(1:n)%p
             end if
         end do
     end if
