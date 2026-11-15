@@ -163,7 +163,7 @@ and checking the permissions of the file.
 
 This script builds all executables, generates the initial conditions files above automatically, and runs the simulation across n_particles = 1000, 2000, 5000, 10000 and n_threads = 1, 2, 4, 8. So shortly, it does the timing test of the different use of threads and for a different number of particles automatically. Different values can be used for n_particles and n_threads just by changing them inside the file.
 
-Timing is measured using `omp_get_wtime()`, which can be found inside the main simulation loop in `ex1.f90`. `dt_out` was set equal to `t_end` inside the `run_tests.sh` shell script for `random_sphere.f90` so that output writing does not dominate the measured time.
+Timing is measured using `omp_get_wtime()`, which can be found inside the main simulation loop in `ex1.f90`. `dt_out` was set equal to `t_end` inside the `run_tests.sh` shell script for `random_sphere.f90` so that output writing does not dominate the measured time. The parallelization test was done for both of the methods implemented.
 
 ---
 
